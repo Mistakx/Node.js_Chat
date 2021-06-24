@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Socket.IO chat</title>
+    <style>
+
+        body {
+            font: 13px Helvetica, Arial;
+        }
+
+        #login{
+            width:100vw;
+            height: 100vh;
+        }
+
+        #chat{
+            overflow:auto;
+        }
+
+        #login_form{
+            border:1px solid red;
+            left:50%;
+            top:50%;
+            margin:0 auto;
+        }
+
+        #message_form {
+            background-color:rgb(216, 170, 118); padding: 8px 8px 8px 8px ;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            height: 85vh;
+        }
+
+        #messages li {
+            padding: 5px 10px;
+        }
+
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        function intToRGB(i) {
+            var c = (i & 0x00FFFFFF)
+                .toString(16)
+                .toUpperCase();
+
+            return "00000".substring(0, 6 - c.length) + c;
+        }
+
+        function hashCode(str) { // java String#hashCode
+            var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            var result = intToRGB(hash);
+            console.log(result);
+            return result;
+        }
+
+        $(document).ready(function () {
+
+            var socket = io();
+
+            // Join button
+            $("#join").click(function () {
+                var name = $("#name").val();
+                if (name != "") {
+                    socket.emit("join", name);
+                    alert("Login successful!!");
+                    $("#login").remove();
+                }else{
+                    alert("Please insert a valid user name");
+                }
+            });
+
+            // Send message button
+            $('form').submit(function () {
+                socket.emit('chatMessage', $('#m').val());
+                console.log($('#m').val());
+                $('#m').val('');
+                return false;
+            });
+
+            // Client receives message
+            socket.on('chatMessage', function (msg) {
+                $('#messages').append('<li style=background-color:#' + hashCode(msg.id) + '>' + (msg.id + ":" + msg.msg) + '</li>');
+                window.scrollTo(0,document.body.scrollHeight);
+            });
+
+            // Client receives update
+            socket.on('update',function(msg){
+                $('#messages').append('<li style="background-color:#000000;color:#FFFFFF">' + (msg) + '</li>');
+                window.scrollTo(0,document.body.scrollHeight);
+            });
+        });
+
+    </script>
+</head>
+
+<body>
+
+// Login button
+<div id="login">
+    <form  id="login_form">
+        <input type="text" placeholder="Your name" id="name">
+        <input type="button" name="join" id="join" value="Join">
+    </form>
+</div>
+
+// Chat
+<div id="chat">
+    <ul id="messages"></ul>
+</div>
+
+<hr>
+
+// Message form
+<form id="message_form" action="">
+    <input style="width:90%" id="m"  autocomplete="off" />
+    <button>Send Message</button>
+</form>
+
+
+</body>
+
+</html>
