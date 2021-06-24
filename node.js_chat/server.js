@@ -47,31 +47,28 @@ io.on('connection', function(socket){
 
 
 // Client connects to the server route
-
-// app.get('/', function(request, response) {
-//
-//     response.render('chat.ejs');
-//
-// });
-
 app.get("/", (request, response) => {
 
     const isAuthenticated = !!request.user;
 
-    // if (isAuthenticated) {
-    //     console.log(`user is authenticated, session is ${req.session.id}`);
-    // } else {
-    //     console.log("unknown user");
-    // }
-
     response.render(isAuthenticated ? "index.ejs" : 'login.ejs');
 
-    //response.sendFile(isAuthenticated ? "index.html" : "login.html", { root: __dirname });
 });
 
-// Login post request
-app.post("/login", passport.authenticate("local", {
-        successRedirect: "/",
-        failureRedirect: "/",
-    })
-);
+// Register user
+app.get("/register", ensureLoggedOut('/'), (request, response) => {
+    response.render("register.ejs");
+});
+app.post("/register",function(request, response){
+
+    // New user in the DB
+    const instance = new User({ username: request.body.username, password: request.body.password });
+    
+    instance.save(function (err, instance) {
+        if (err) return console.error(err);
+
+        //Let's redirect to the login post which has auth
+        response.redirect(307, '/login');
+    });
+
+});
