@@ -1,6 +1,11 @@
 let app  = require('express')();
+let ejs = require('ejs');
 let http = require('http').Server(app);
 let io   = require('socket.io')(http);
+
+
+
+app.set('view engine', 'ejs');
 
 
 
