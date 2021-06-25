@@ -127,7 +127,7 @@ io.on('connect', function(socket){
 
         // console.log('chatName: ' + chatName);
 
-        let clientUsername = socket.request.user.username
+        let clientUsername = socket.request.user.username;
 
         Room.findById(chatID, (error, data) => {
 
@@ -142,9 +142,13 @@ io.on('connect', function(socket){
                 console.log(data);
 
 
+
+
             }
 
         })
+
+        Room.findByIdAndUpdate(chatID, { $push: { users: clientUsername } }).exec();
 
     })
 
@@ -186,7 +190,7 @@ app.get("/", (request, response) => {
                 for (let i = 0; i < clientRooms.length; i++) {
 
                     chatRoomsParsedInfo = chatRoomsParsedInfo + '<p>' + clientRooms[i]._id.toString() + " - " + clientRooms[i].name.toString() + '</p>';
-                    console.log(chatRoomsParsedInfo)
+
                 }
 
                 response.render('index.ejs', {userData: chatRoomsParsedInfo});
