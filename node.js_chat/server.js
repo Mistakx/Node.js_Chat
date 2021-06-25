@@ -1,50 +1,102 @@
 let app  = require('express')();
+
+
+
+// EJS
 let ejs = require('ejs');
-let http = require('http').Server(app);
-let io   = require('socket.io')(http);
-let passport = require("passport");
-let mongoose = require('mongoose');
-
-
 app.set('view engine', 'ejs');
-mongoose.connect('mongodb+srv://G9:rtLjPDj0sF0lE5HQ@clusterdbw.1dbjr.mongodb.net/G9?authSource=admin&replicaSet=atlas-bek8xj-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true', {useNewUrlParser: true, useUnifiedTopology: true});
 
 
-let people = {};
+
+// Middleware
+let passport = require("passport");
+let bodyParser = require("body-parser");
+const session = require("express-session");
+const sessionMiddleware = session({ secret: "changeit", resave: false, saveUninitialized: false });
+app.use(sessionMiddleware);
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 
 // Connect to Database
+let mongoose = require('mongoose');
+mongoose.connect('mongodb+srv://G9:rtLjPDj0sF0lE5HQ@clusterdbw.1dbjr.mongodb.net/G9?authSource=admin&replicaSet=atlas-bek8xj-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true', {useNewUrlParser: true, useUnifiedTopology: true});
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'Connection to database error.'));
 db.once('open', function() { console.log('Connected to database.'); } );
 
 
-// Server start
-http.listen(3000, function(){
-    console.log('listening on *:3000');
+
+// Database - User
+const userSchema = new mongoose.Schema({
+    username: String,
+    password: String
+});
+userSchema.methods.verifyPassword = function (password) {
+    return password === this.password;
+}
+const User = mongoose.model('User', userSchema);
+
+
+
+// Socket.IO middlewares
+let server = require("http").createServer(app);
+const io = require('socket.io')(server);
+const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
+io.use(wrap(sessionMiddleware));
+io.use(wrap(passport.initialize()));
+io.use(wrap(passport.session()));
+io.use((socket, next) => {
+    if (socket.request.user) {
+        next();
+    } else {
+        next(new Error('unauthorized'))
+    }
 });
 
 
 
-// Client connects to the server
-io.on('connection', function(socket){
+// Client connects to the server - Socket.IO
+io.on('connect', function(socket){
+
+    //console.log(`new connection ${socket.id}`);
+
+    socket.on('whoami', (cb) => {
+        cb(socket.request.user.username);
+    });
+
+    // Session data
+    const session = socket.request.session;
+    //console.log(`saving sid ${socket.id} in session ${session.id}`);
+    session.socketId = socket.id;
+    session.save();
 
     // Client joins the server
     socket.on("join", function(clientUsername){
         //console.log(clientUsername+" has joined the server.");
-        people[socket.id] = clientUsername;
+        //people[socket.id] = clientUsername;
         io.emit("update", clientUsername + " has joined the server.");
     });
 
     // Client sends chat message
     socket.on('chatMessage', function(clientMessage){
         //console.log('message: ' + clientMessage);
-        let message = {msg:clientMessage, id:people[socket.id]};
+        let message = {msg:clientMessage, id:socket.request.user.username};
         io.emit('chatMessage', message);
     })
 });
 
 
+
+// Server start
+server.listen(3000, function(){
+    console.log('Server started. Listening on port 3000.');
+});
+
+
+//let people = {};
 
 // Client connects to the server route
 app.get("/", (request, response) => {
@@ -55,10 +107,14 @@ app.get("/", (request, response) => {
 
 });
 
+
+
 // Register user
+const ensureLoggedOut = require('connect-ensure-login').ensureLoggedOut;
 app.get("/register", ensureLoggedOut('/'), (request, response) => {
     response.render("register.ejs");
 });
+
 app.post("/register",function(request, response){
 
     // New user in the DB
@@ -72,3 +128,38 @@ app.post("/register",function(request, response){
     });
 
 });
+
+
+
+// User login
+const LocalStrategy = require("passport-local").Strategy;
+passport.use(new LocalStrategy( function(username, password, done) {
+        User.findOne({ username: username }, function (err, user) {
+            if (err) { return done(err); }
+            if (!user) { return done(null, false); }
+            if (!user.verifyPassword(password)) { return done(null, false); }
+            return done(null, user);
+        });
+    }));
+
+passport.serializeUser((user, cb) => {
+    //console.log(`serializeUser ${user.id}`);
+
+    cb(null, user.id);
+
+});
+passport.deserializeUser((id, cb) => {
+
+    //console.log(`deserializeUser ${id}`);
+
+    User.findById(id, function (err, user) {
+        if (err) { return cb(err); }
+        cb(null, user);
+    });
+
+});
+
+app.post("/login", passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/",
+    }));
