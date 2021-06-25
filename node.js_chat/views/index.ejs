@@ -3,8 +3,54 @@
 <html lang="en">
 
     <head>
+
         <meta charset="UTF-8">
         <title>Passport example</title>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+
+        <script>
+
+            function addUserDetails() {
+
+                const socket = io();
+                const socketIdSpan = document.getElementById("socketId");
+                const usernameSpan = document.getElementById("username");
+
+                socket.on('connect', () => {
+
+                    socketIdSpan.innerText = socket.id;
+
+                    socket.emit('whoami', (username) => {
+                        usernameSpan.innerText = username;
+                    });
+
+                });
+
+                // TODO: Add User Rooms
+
+            };
+
+            $(document).ready(function () {
+
+                let socket = io();
+
+                // Message submit button clocked
+                $('#createRoomForm').submit(function () {
+                    socket.emit('createRoom', $('#createRoomFormInput').val());
+                    //console.log($('#m').val());
+                    $('#createRoomFormInput').val('');
+                    return false;
+                });
+
+            });
+
+
+
+        </script>
+
+
     </head>
 
     <body>
@@ -12,34 +58,32 @@
         <p>Authenticated!</p>
         <p>Socket ID: <span id="socketId"></span></p>
         <p>Username: <span id="username"></span></p>
+        <script>addUserDetails();</script> <!-- Fills the page with the authenticated user details-->
 
-        <form action="/logout" method="post">
-            <div>
-                <input type="submit" value="Log out" />
-            </div>
-        </form>
+        <div>
 
-        <a href="/chat" >Go to Chatroom</a>
+            <!--Logout button-->
+            <form action="/logout" method="post">
 
-        <script src="/socket.io/socket.io.js"></script>
+                <div>
+                    <input type="submit" value="Log out" />
+                </div>
 
-        <script>
+            </form>
 
-          const socket = io();
-          const socketIdSpan = document.getElementById("socketId");
-          const usernameSpan = document.getElementById("username");
+            <!--Go to chat button-->
+            <button onclick="window.location='/chat';">Go to chat</button>
 
-          socket.on('connect', () => {
+            <!--Create Room FormButton-->
+            <form id="createRoomForm" action="">
+                <input style="width:10%" id="createRoomFormInput" autocomplete="off" />
+                <button>Create Room</button>
+            </form>
 
-            socketIdSpan.innerText = socket.id;
+        </div>
 
-            socket.emit('whoami', (username) => {
-              usernameSpan.innerText = username;
-            });
-
-          });
-
-        </script>
+        <p>Chat Rooms</p>
+        <%= userData %>
 
     </body>
 

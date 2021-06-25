@@ -25,7 +25,9 @@ let mongoose = require('mongoose');
 mongoose.connect('mongodb+srv://G9:rtLjPDj0sF0lE5HQ@clusterdbw.1dbjr.mongodb.net/G9?authSource=admin&replicaSet=atlas-bek8xj-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true', {useNewUrlParser: true, useUnifiedTopology: true});
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'Connection to database error.'));
-db.once('open', function() { console.log('Connected to database.'); } );
+db.once('open', function() {
+    console.log('Connected to database.');
+});
 
 
 
@@ -33,7 +35,6 @@ db.once('open', function() { console.log('Connected to database.'); } );
 const userSchema = new mongoose.Schema({
     username: String,
     password: String,
-    room: [Number]
 });
 userSchema.methods.verifyPassword = function (password) {
     return password === this.password;
@@ -48,7 +49,8 @@ const Message = mongoose.model('Message', messageSchema);
 
 // Database - Room
 const roomSchema = new mongoose.Schema({
-    name: String
+    name: String,
+    users: [String]
 });
 const Room = mongoose.model('Room', roomSchema);
 
@@ -102,26 +104,20 @@ io.on('connect', function(socket){
         const instance = new Message({ message: message.msg });
         instance.save(function (err, instance) {
             if (err) return console.error(err);
-
-            //Let's redirect to the login post which has auth
-            //response.redirect(307, '/login');
         });
     })
 
     // Client creates a chat room
-    socket.on('createChat', function(chatName) {
+    socket.on('createRoom', function(chatName) {
 
-        //console.log('message: ' + clientMessage);
+        console.log('chatName: ' + chatName);
 
-        let message = {msg:clientMessage, id:socket.request.user.username};
-
-        const instance = new Message({ message: message.msg });
+        const instance = new Room({ name: chatName });
         instance.save(function (err, instance) {
             if (err) return console.error(err);
 
-            //Let's redirect to the login post which has auth
-            //response.redirect(307, '/login');
         });
+
     })
 
 });
@@ -140,7 +136,38 @@ app.get("/", (request, response) => {
 
     const isAuthenticated = !!request.user;
 
-    response.render(isAuthenticated ? "index.ejs" : 'login.ejs');
+    if (isAuthenticated) {
+
+        let clientUsername = request.user.username
+
+        User.find({username : clientUsername}, (error, userData) => {
+
+            if (error) {
+
+                console.log(error)
+
+            }
+
+            else {
+
+                response.render('index.ejs', {userData: userData});
+
+            }
+
+        })
+
+
+
+
+
+    }
+
+
+
+    else {
+        response.render('login.ejs');
+    }
+
 
 });
 
@@ -229,9 +256,3 @@ app.get("/chat", ensureLoggedIn('/'), (request, response) => {
 
 });
 
-// Create Room
-app.post("/createRoom", (request, response) => {
-
-    response.render('chat.ejs');
-
-});

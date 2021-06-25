@@ -70,7 +70,7 @@
             socket.emit("join");
 
             // Message submit button clocked
-            $('form').submit(function () {
+            $('#messageForm').submit(function () {
                 socket.emit('chatMessage', $('#messageFormInput').val());
                 //console.log($('#m').val());
                 $('#messageFormInput').val('');
@@ -91,6 +91,7 @@
         });
 
     </script>
+
 </head>
 
 <body>
