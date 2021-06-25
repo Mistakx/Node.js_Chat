@@ -29,23 +29,28 @@ db.once('open', function() { console.log('Connected to database.'); } );
 
 
 
-// Database - User
+// Database - Users
 const userSchema = new mongoose.Schema({
     username: String,
-    password: String
+    password: String,
+    room: [Number]
 });
 userSchema.methods.verifyPassword = function (password) {
     return password === this.password;
 }
 const User = mongoose.model('User', userSchema);
 
-
-
 // Database - Messages
 const messageSchema = new mongoose.Schema({
     message: String
 });
-const Message = mongoose.model('message', messageSchema);
+const Message = mongoose.model('Message', messageSchema);
+
+// Database - Room
+const roomSchema = new mongoose.Schema({
+    name: String
+});
+const Room = mongoose.model('Room', roomSchema);
 
 
 // Socket.IO middlewares
@@ -70,15 +75,16 @@ io.on('connect', function(socket){
 
     //console.log(`new connection ${socket.id}`);
 
-    socket.on('whoami', (cb) => {
-        cb(socket.request.user.username);
-    });
-
     // Session data
     const session = socket.request.session;
     //console.log(`saving sid ${socket.id} in session ${session.id}`);
     session.socketId = socket.id;
     session.save();
+
+
+    socket.on('whoami', (cb) => {
+        cb(socket.request.user.username);
+    });
 
     // Client joins the server
     socket.on("join", function() {
@@ -101,6 +107,23 @@ io.on('connect', function(socket){
             //response.redirect(307, '/login');
         });
     })
+
+    // Client creates a chat room
+    socket.on('createChat', function(chatName) {
+
+        //console.log('message: ' + clientMessage);
+
+        let message = {msg:clientMessage, id:socket.request.user.username};
+
+        const instance = new Message({ message: message.msg });
+        instance.save(function (err, instance) {
+            if (err) return console.error(err);
+
+            //Let's redirect to the login post which has auth
+            //response.redirect(307, '/login');
+        });
+    })
+
 });
 
 
@@ -198,10 +221,16 @@ app.post("/logout", (request, response) => {
     response.redirect("/");
 });
 
-
 // Chat
 const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 app.get("/chat", ensureLoggedIn('/'), (request, response) => {
+
+    response.render('chat.ejs');
+
+});
+
+// Create Room
+app.post("/createRoom", (request, response) => {
 
     response.render('chat.ejs');
 

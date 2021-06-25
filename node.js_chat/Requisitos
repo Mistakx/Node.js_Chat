@@ -1,0 +1,54 @@
+1. Deverá ser possível a um utilizador criar uma conta com : nome de utilizador, password e foto
+de perfil.
+Username and password done.
+
+2. O sistema deverá apresentar um ecrã de login, só após o login bem sucedido um utilizador
+poderá iniciar ou aceder às conversas.
+Fully done.
+
+3. Em cada conversa participam várias pessoas, mas cada pessoa pode participar em várias
+conversas. Qualquer pessoa pode criar uma conversa. A pessoa que cria uma conversa
+escolhe que outras pessoas convidar a participar inicialmente nessa conversa e configura as
+regras da conversa.
+Not done.
+
+
+4. Cada mensagem pertence necessariamente a uma conversa, mas podem existir partilhas de
+links para mensagens específicas. Uma conversa tem um nome descritivo, que por omissão é
+a data em que foi iniciada. O nome da conversa pode ser alterado posteriormente, mas o
+histórico de nomes (e respetiva data é guardado).
+Not done.
+
+5. Cada pessoa pode recusar o convite para participar nas conversas. Uma pessoa pode a
+qualquer momento abandonar uma conversa. Tendo já participado na conversa pode mais
+tarde pedir para ser readmitido.
+Not done.
+
+
+6. As mensagens são acrescentadas ao “flow” de uma conversa com base na data, mas também
+podem existir mensagens em resposta a outra mensagem, também ordenadas por data, o que
+cria uma árvore de mensagens (como no facebook).
+Not done.
+
+7. Deverão ser usados pelo menos 2 princípios DRY ou técnicas de sass para a estilização do
+conteúdo em html. O código pode ser pré-compilado num .css, embora mantendo o .scss
+original na entrega final. Estes princípios ou técnicas não são limitados aos lecionados nas
+aulas, havendo, portanto, liberdade de escolha e implementação, desde que adequados e
+devidamente documentados.
+Not done.
+
+8. Deverá ser desenvolvido e utilizado um módulo/dependência externa para node.js. As funções
+exportadas terão de ser coerentes dentro do módulo, i.e. servir um propósito comum.
+Not done.
+
+
+9. Todas as mensagens deverão ser guardadas na base de dados fornecida.
+Fully done.
+
+10. Utilizar selectores para class e id tanto em jQuery como em regras CSS.
+Not done.
+
+14. Todas as mensagens deverão ser guardadas na base de dados fornecida.
+Fully done.
+
+

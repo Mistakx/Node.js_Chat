@@ -10,34 +10,23 @@
             font: 13px Helvetica, Arial;
         }
 
-        #login{
-            width:100vw;
-            height: 100vh;
-        }
-
         #chat{
             overflow:auto;
         }
 
-        #login_form{
-            border:1px solid red;
-            left:50%;
-            top:50%;
-            margin:0 auto;
-        }
-
-        #message_form {
+        #messageForm {
             background-color:rgb(216, 170, 118); padding: 8px 8px 8px 8px ;
+            display: inline;
         }
 
-        #messages {
+        #chatMessageBox {
             list-style-type: none;
             margin: 0;
             padding: 0;
             height: 85vh;
         }
 
-        #messages li {
+        #chatMessageBox li {
             padding: 5px 10px;
         }
 
@@ -48,62 +37,83 @@
 
     <script>
 
-        function intToRGB(i) {
-            var c = (i & 0x00FFFFFF)
+        function intToRGB(integer) {
+            let c = (integer & 0x00FFFFFF)
                 .toString(16)
                 .toUpperCase();
 
             return "00000".substring(0, 6 - c.length) + c;
         }
 
-        function hashCode(str) { // java String#hashCode
-            var hash = 0;
-            for (var i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        function hashCode(string) { // java String#hashCode
+            let hash = 0;
+            for (let i = 0; i < string.length; i++) {
+                hash = string.charCodeAt(i) + ((hash << 5) - hash);
             }
-            var result = intToRGB(hash);
+            let result = intToRGB(hash);
             console.log(result);
             return result;
         }
 
+        function linkify(text) {
+            let urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+            return text.replace(urlRegex, function(url) {
+                return '<a href="' + url + '">' + url + '</a>';
+            });
+        }
+
         $(document).ready(function () {
 
-            var socket = io();
+            let socket = io();
 
-            //We don't need to pass the name, it will be obtained from the session
+            // We don't need to pass the name, it will be obtained from the session
             socket.emit("join");
 
+            // Message submit button clocked
             $('form').submit(function () {
-                socket.emit('chatMessage', $('#m').val());
-                console.log($('#m').val());
-                $('#m').val('');
+                socket.emit('chatMessage', $('#messageFormInput').val());
+                //console.log($('#m').val());
+                $('#messageFormInput').val('');
                 return false;
             });
-            socket.on('chatMessage', function (msg) {
-                $('#messages').append('<li style=background-color:#' + hashCode(msg.id) + '>' + (msg.id + ":" + msg.msg) + '</li>');
+
+            // Client received message
+            socket.on('chatMessage', function(message) {
+                $('#chatMessageBox').append('<li style=background-color:#' + hashCode(message.id) + '>' + (message.id + ":" + linkify(message.msg)) + '</li>');
                 window.scrollTo(0,document.body.scrollHeight);
             });
 
-            socket.on('update',function(msg){
-                $('#messages').append('<li style="background-color:#000000;color:#FFFFFF">' + (msg) + '</li>');
+            // Client received update
+            socket.on('update', function(message) {
+                $('#chatMessageBox').append('<li style="background-color:#000000;color:#FFFFFF">' + (message) + '</li>');
                 window.scrollTo(0,document.body.scrollHeight);
             });
         });
+
     </script>
 </head>
 
 <body>
 
+<!--Chat Messages Box-->
 <div id="chat">
-    <ul id="messages"></ul>
+    <ul id="chatMessageBox"></ul>
 </div>
 
 <hr>
 
-<form id="message_form" action="">
-    <input style="width:90%" id="m"  autocomplete="off" />
-    <button>Send Message</button>
-</form>
+<div>
+
+    <!--Leave Room Button-->
+    <button onclick="window.location='/';">Leave Room</button>
+
+    <!--Message FormButton-->
+    <form id="messageForm" action="">
+        <input style="width:88%" id="messageFormInput" autocomplete="off" />
+        <button>Send Message</button>
+    </form>
+
+</div>
 
 
 </body>
