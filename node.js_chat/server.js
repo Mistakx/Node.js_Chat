@@ -110,13 +110,41 @@ io.on('connect', function(socket){
     // Client creates a chat room
     socket.on('createRoom', function(chatName) {
 
-        console.log('chatName: ' + chatName);
+        // console.log('chatName: ' + chatName);
 
-        const instance = new Room({ name: chatName });
+        let clientUsername = socket.request.user.username
+
+        const instance = new Room({ name: chatName, users: [clientUsername]});
         instance.save(function (err, instance) {
             if (err) return console.error(err);
 
         });
+
+    })
+
+    // Client joins a chat room
+    socket.on('joinRoom', function(chatID) {
+
+        // console.log('chatName: ' + chatName);
+
+        let clientUsername = socket.request.user.username
+
+        Room.findById(chatID, (error, data) => {
+
+            if (error) {
+
+                console.log(error);
+
+            }
+
+            else {
+
+                console.log(data);
+
+
+            }
+
+        })
 
     })
 
@@ -140,7 +168,7 @@ app.get("/", (request, response) => {
 
         let clientUsername = request.user.username
 
-        User.find({username : clientUsername}, (error, userData) => {
+        Room.find({users : clientUsername}, (error, clientRooms) => {
 
             if (error) {
 
@@ -150,24 +178,28 @@ app.get("/", (request, response) => {
 
             else {
 
-                response.render('index.ejs', {userData: userData});
+                let chatRoomsParsedInfo = "";
+                // console.log(clientRooms);
+                // console.log(clientRooms[0]);
+                // console.log(clientRooms[0]._id);
+
+                for (let i = 0; i < clientRooms.length; i++) {
+
+                    chatRoomsParsedInfo = chatRoomsParsedInfo + '<p>' + clientRooms[i]._id.toString() + " - " + clientRooms[i].name.toString() + '</p>';
+                    console.log(chatRoomsParsedInfo)
+                }
+
+                response.render('index.ejs', {userData: chatRoomsParsedInfo});
 
             }
 
         })
 
-
-
-
-
     }
-
-
 
     else {
         response.render('login.ejs');
     }
-
 
 });
 

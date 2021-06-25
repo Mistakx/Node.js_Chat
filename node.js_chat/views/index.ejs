@@ -36,11 +36,20 @@
 
                 let socket = io();
 
-                // Message submit button clocked
+                // Create room submit button clicked
                 $('#createRoomForm').submit(function () {
                     socket.emit('createRoom', $('#createRoomFormInput').val());
                     //console.log($('#m').val());
                     $('#createRoomFormInput').val('');
+                    return false;
+                });
+
+                // Join room submit button clicked
+                $('#joinRoomForm').submit(function () {
+                    socket.emit('joinRoom', $('#joinRoomFormInput').val());
+                    //console.log($('#m').val());
+                    $('#joinRoomFormInput').val('');
+                    location.href = '/';
                     return false;
                 });
 
@@ -72,7 +81,7 @@
             </form>
 
             <!--Go to chat button-->
-            <button onclick="window.location='/chat';">Go to chat</button>
+            <button onclick="window.location='/chat'">Go to chat</button>
 
             <!--Create Room FormButton-->
             <form id="createRoomForm" action="">
@@ -80,10 +89,16 @@
                 <button>Create Room</button>
             </form>
 
+            <!--Join Room FormButton-->
+            <form id="joinRoomForm" action="">
+                <input style="width:10%" id="joinRoomFormInput" autocomplete="off" />
+                <button>Join Room</button>
+            </form>
+
         </div>
 
         <p>Chat Rooms</p>
-        <%= userData %>
+        <%- userData %>
 
     </body>
 
