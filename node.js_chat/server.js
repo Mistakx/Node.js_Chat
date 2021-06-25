@@ -41,6 +41,13 @@ const User = mongoose.model('User', userSchema);
 
 
 
+// Database - Messages
+const messageSchema = new mongoose.Schema({
+    message: String
+});
+const Message = mongoose.model('message', messageSchema);
+
+
 // Socket.IO middlewares
 let server = require("http").createServer(app);
 const io = require('socket.io')(server);
@@ -74,10 +81,10 @@ io.on('connect', function(socket){
     session.save();
 
     // Client joins the server
-    socket.on("join", function(clientUsername){
-        //console.log(clientUsername+" has joined the server.");
+    socket.on("join", function() {
+        //console.log(socket.request.user.username+" joined server");
         //people[socket.id] = clientUsername;
-        io.emit("update", clientUsername + " has joined the server.");
+        io.emit("update", socket.request.user.username + " has joined the server.");
     });
 
     // Client sends chat message
@@ -85,6 +92,14 @@ io.on('connect', function(socket){
         //console.log('message: ' + clientMessage);
         let message = {msg:clientMessage, id:socket.request.user.username};
         io.emit('chatMessage', message);
+
+        const instance = new Message({ message: message.msg });
+        instance.save(function (err, instance) {
+            if (err) return console.error(err);
+
+            //Let's redirect to the login post which has auth
+            //response.redirect(307, '/login');
+        });
     })
 });
 
@@ -96,7 +111,6 @@ server.listen(3000, function(){
 });
 
 
-//let people = {};
 
 // Client connects to the server route
 app.get("/", (request, response) => {
@@ -112,7 +126,9 @@ app.get("/", (request, response) => {
 // Register user
 const ensureLoggedOut = require('connect-ensure-login').ensureLoggedOut;
 app.get("/register", ensureLoggedOut('/'), (request, response) => {
+
     response.render("register.ejs");
+
 });
 
 app.post("/register",function(request, response){
@@ -163,3 +179,30 @@ app.post("/login", passport.authenticate("local", {
     successRedirect: "/",
     failureRedirect: "/",
     }));
+
+
+// User logout
+app.post("/logout", (request, response) => {
+
+    //console.log(`logout ${req.session.id}`);
+
+    const socketId = request.session.socketId;
+
+    if (socketId && io.of("/").sockets.get(socketId)) {
+        console.log(`forcefully closing socket ${socketId}`);
+        io.of("/").sockets.get(socketId).disconnect(true);
+    }
+
+    request.logout();
+    response.cookie("connect.sid", "", { expires: new Date() });
+    response.redirect("/");
+});
+
+
+// Chat
+const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
+app.get("/chat", ensureLoggedIn('/'), (request, response) => {
+
+    response.render('chat.ejs');
+
+});

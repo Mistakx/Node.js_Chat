@@ -19,21 +19,28 @@
             </div>
         </form>
 
-        <a href="/chatroom" >Go to Chatroom</a>
+        <a href="/chat" >Go to Chatroom</a>
 
         <script src="/socket.io/socket.io.js"></script>
+
         <script>
+
           const socket = io();
           const socketIdSpan = document.getElementById("socketId");
           const usernameSpan = document.getElementById("username");
 
           socket.on('connect', () => {
+
             socketIdSpan.innerText = socket.id;
 
             socket.emit('whoami', (username) => {
               usernameSpan.innerText = username;
             });
+
           });
+
         </script>
+
     </body>
+
 </html>

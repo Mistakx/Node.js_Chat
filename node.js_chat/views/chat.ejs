@@ -3,6 +3,7 @@
 
 <head>
     <title>Socket.IO chat</title>
+
     <style>
 
         body {
@@ -41,8 +42,10 @@
         }
 
     </style>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+
     <script>
 
         function intToRGB(i) {
@@ -67,60 +70,36 @@
 
             var socket = io();
 
-            // Join button
-            $("#join").click(function () {
-                var name = $("#name").val();
-                if (name != "") {
-                    socket.emit("join", name);
-                    alert("Login successful!!");
-                    $("#login").remove();
-                }else{
-                    alert("Please insert a valid user name");
-                }
-            });
+            //We don't need to pass the name, it will be obtained from the session
+            socket.emit("join");
 
-            // Send message button
             $('form').submit(function () {
                 socket.emit('chatMessage', $('#m').val());
                 console.log($('#m').val());
                 $('#m').val('');
                 return false;
             });
-
-            // Client receives message
             socket.on('chatMessage', function (msg) {
                 $('#messages').append('<li style=background-color:#' + hashCode(msg.id) + '>' + (msg.id + ":" + msg.msg) + '</li>');
                 window.scrollTo(0,document.body.scrollHeight);
             });
 
-            // Client receives update
             socket.on('update',function(msg){
                 $('#messages').append('<li style="background-color:#000000;color:#FFFFFF">' + (msg) + '</li>');
                 window.scrollTo(0,document.body.scrollHeight);
             });
         });
-
     </script>
 </head>
 
 <body>
 
-<!--Login button-->
-<div id="login">
-    <form  id="login_form">
-        <input type="text" placeholder="Your name" id="name">
-        <input type="button" name="join" id="join" value="Join">
-    </form>
-</div>
-
-<!--Chat-->
 <div id="chat">
     <ul id="messages"></ul>
 </div>
 
 <hr>
 
-<!--Message form-->
 <form id="message_form" action="">
     <input style="width:90%" id="m"  autocomplete="off" />
     <button>Send Message</button>
