@@ -119,6 +119,8 @@ io.on('connection', socket => {
     // Client enters a chat room
     socket.on('enteredRoom', function(roomID) {
 
+        // Exeptions - Invalid room format entered, room exists but the user is not in it, valid format but room doesn't exist
+
         let clientUsername = socket.request.user.username;
 
         console.log("User " + clientUsername + " entered room " + roomID);
@@ -128,37 +130,45 @@ io.on('connection', socket => {
                 if (error) {
 
                     console.log("User tried to enter an invalid room.");
-                    console.log(socket.request);
+                    io.to(socket.id).emit('update', "User tried to enter an invalid room.");
                     // TODO: Send error message to user
 
 
                 } else {
 
-                    let roomUsers = roomData.users;
-                    let userIsInRoom = false;
+                    try {
 
-                    for (let i = 0; i < roomUsers.length; i++) {
+                        let roomUsers = roomData.users;
+                        let userIsInRoom = false;
 
-                        // User is in the room
-                        if (roomUsers[i] === clientUsername) {
-                            userIsInRoom = true;
-                            break;
+                        for (let i = 0; i < roomUsers.length; i++) {
 
+                            // User is in the room
+                            if (roomUsers[i] === clientUsername) {
+                                userIsInRoom = true;
+                                break;
+
+                            }
+
+                        }
+
+                        if (userIsInRoom) {
+                            console.log("Username is in room.")
+                            socket.join(roomID);
+                            // console.log(socket.rooms);
+                        } else {
+                            console.log("User isn't in the room.")
+                            //console.log(socket.request)
+                            io.to(socket.id).emit('update', "User isn't in the room.");
+                            // TODO: Send error message to user
                         }
 
                     }
 
-                    if (userIsInRoom) {
-                        console.log("Username is in room.")
-                        socket.join(roomID);
-                        // console.log(socket.rooms);
-                    } else {
-                        console.log("User isn't in the room.")
-                        console.log(socket.request)
-                        //io.to(clientMessage.room).emit('chatMessage', message);
-                        // TODO: Send error message to user
+                    catch (exception) {
+                        console.log("User tried to enter a valid room that doesn't exist.");
+                        io.to(socket.id).emit('update', "User tried to enter a valid room that doesn't exist.");
                     }
-
                 }
 
             })
