@@ -1,0 +1,18 @@
+Socket.IO username
+socket.request.user.username
+
+URL Parameters
+app.get("/chat/:roomID", ensureLoggedIn('/'), (request, response) => {
+console.log(request.params.roomID)
+
+Get Form Value
+$('#enterRoomFormInput').val();
+
+Set Form Value
+$('#enterRoomFormInput').val("newValue");
+
+Print prints all elements of the rooms object
+console.log(socket.rooms);
+
+Socket.IO ID
+socket.id;

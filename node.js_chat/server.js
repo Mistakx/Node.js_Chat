@@ -73,7 +73,7 @@ io.use((socket, next) => {
 
 
 // Client connects to the server - Socket.IO
-io.on('connect', function(socket){
+io.on('connection', socket => {
 
     //console.log(`new connection ${socket.id}`);
 
@@ -83,28 +83,86 @@ io.on('connect', function(socket){
     session.socketId = socket.id;
     session.save();
 
-
-    socket.on('whoami', (cb) => {
-        cb(socket.request.user.username);
+    socket.on("joinServer", () => {
+        // console.log("JOINED SERVER DEBUG")
+        // console.log(socket.rooms); // prints all elements of the rooms object
+        // socket.join("60d6489e56db0323c00e57d5");
+        // console.log(socket.rooms); // prints all elements of the rooms object
+        null;
     });
 
-    // Client joins the server
-    socket.on("join", function() {
-        //console.log(socket.request.user.username+" joined server");
-        //people[socket.id] = clientUsername;
-        io.emit("update", socket.request.user.username + " has joined the server.");
+    socket.on('whoami', (callback) => {
+        callback(socket.request.user.username);
     });
 
     // Client sends chat message
-    socket.on('chatMessage', function(clientMessage){
-        //console.log('message: ' + clientMessage);
-        let message = {msg:clientMessage, id:socket.request.user.username};
-        io.emit('chatMessage', message);
+    socket.on('chatMessage', function(clientMessage) {
+
+        // clientMessage = {room: roomID, message: message}
+        console.log('New message: ' + JSON.stringify(clientMessage));
+
+
+        let message = {msg:clientMessage.message, id:socket.request.user.username};
+
+        //socket.broadcast.to(user.room).emit('message',formatMessage(botName, `${user.username} has joined the chat`));
+        console.log(socket.rooms); // prints all elements of the rooms object
+        console.log(clientMessage.room)
+        io.to(clientMessage.room).emit('chatMessage', message);
+        //io.emit('chatMessage', message);
 
         const instance = new Message({ message: message.msg });
         instance.save(function (err, instance) {
             if (err) return console.error(err);
         });
+    })
+
+    // Client enters a chat room
+    socket.on('enteredRoom', function(roomID) {
+
+        let clientUsername = socket.request.user.username;
+
+        console.log("User " + clientUsername + " entered room " + roomID);
+
+            Room.findById(roomID, (error, roomData) => {
+
+                if (error) {
+
+                    console.log("User tried to enter an invalid room.");
+                    console.log(socket.request);
+                    // TODO: Send error message to user
+
+
+                } else {
+
+                    let roomUsers = roomData.users;
+                    let userIsInRoom = false;
+
+                    for (let i = 0; i < roomUsers.length; i++) {
+
+                        // User is in the room
+                        if (roomUsers[i] === clientUsername) {
+                            userIsInRoom = true;
+                            break;
+
+                        }
+
+                    }
+
+                    if (userIsInRoom) {
+                        console.log("Username is in room.")
+                        socket.join(roomID);
+                        // console.log(socket.rooms);
+                    } else {
+                        console.log("User isn't in the room.")
+                        console.log(socket.request)
+                        //io.to(clientMessage.room).emit('chatMessage', message);
+                        // TODO: Send error message to user
+                    }
+
+                }
+
+            })
+
     })
 
     // Client creates a chat room
@@ -123,13 +181,13 @@ io.on('connect', function(socket){
     })
 
     // Client joins a chat room
-    socket.on('joinRoom', function(chatID) {
+    socket.on('joinRoom', function(roomID) {
 
         // console.log('chatName: ' + chatName);
 
         let clientUsername = socket.request.user.username;
 
-        Room.findById(chatID, (error, data) => {
+        Room.findById(roomID, (error, data) => {
 
             if (error) {
 
@@ -142,13 +200,11 @@ io.on('connect', function(socket){
                 console.log(data);
 
 
-
-
             }
 
         })
 
-        Room.findByIdAndUpdate(chatID, { $push: { users: clientUsername } }).exec();
+        Room.findByIdAndUpdate(roomID, { $push: { users: clientUsername } }).exec();
 
     })
 
@@ -172,6 +228,7 @@ app.get("/", (request, response) => {
 
         let clientUsername = request.user.username
 
+        // Find authenticated user's rooms
         Room.find({users : clientUsername}, (error, clientRooms) => {
 
             if (error) {
@@ -187,6 +244,7 @@ app.get("/", (request, response) => {
                 // console.log(clientRooms[0]);
                 // console.log(clientRooms[0]._id);
 
+                // Parse user's rooms data
                 for (let i = 0; i < clientRooms.length; i++) {
 
                     chatRoomsParsedInfo = chatRoomsParsedInfo + '<p>' + clientRooms[i]._id.toString() + " - " + clientRooms[i].name.toString() + '</p>';
@@ -286,9 +344,9 @@ app.post("/logout", (request, response) => {
 
 // Chat
 const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
-app.get("/chat", ensureLoggedIn('/'), (request, response) => {
+app.get("/chat/:roomID", ensureLoggedIn('/'), (request, response) => {
 
-    response.render('chat.ejs');
+    response.render('chat.ejs', {roomID : request.params.roomID});
 
 });
 

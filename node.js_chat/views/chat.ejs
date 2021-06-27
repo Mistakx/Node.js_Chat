@@ -2,7 +2,8 @@
 <html>
 
 <head>
-    <title>Socket.IO chat</title>
+
+    <title>Room <%- roomID %></title>
 
     <style>
 
@@ -51,7 +52,7 @@
                 hash = string.charCodeAt(i) + ((hash << 5) - hash);
             }
             let result = intToRGB(hash);
-            console.log(result);
+            //console.log(result);
             return result;
         }
 
@@ -66,19 +67,18 @@
 
             let socket = io();
 
-            // We don't need to pass the name, it will be obtained from the session
-            socket.emit("join");
+            socket.emit("enteredRoom", "<%- roomID %>");
 
             // Message submit button clocked
             $('#messageForm').submit(function () {
-                socket.emit('chatMessage', $('#messageFormInput').val());
-                //console.log($('#m').val());
+                socket.emit('chatMessage', {room: "<%- roomID %>", message: $('#messageFormInput').val()});
                 $('#messageFormInput').val('');
                 return false;
             });
 
             // Client received message
             socket.on('chatMessage', function(message) {
+                console.log("RECEIVED MESSAGE DEBUG");
                 $('#chatMessageBox').append('<li style=background-color:#' + hashCode(message.id) + '>' + (message.id + ":" + linkify(message.msg)) + '</li>');
                 window.scrollTo(0,document.body.scrollHeight);
             });
@@ -113,6 +113,7 @@
         <input style="width:88%" id="messageFormInput" autocomplete="off" />
         <button>Send Message</button>
     </form>
+
 
 </div>
 

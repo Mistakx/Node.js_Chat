@@ -36,10 +36,19 @@
 
                 let socket = io();
 
+                // Enter room submit button clicked
+                $('#enterRoomForm').submit(function () {
+                    // socket.emit('enterRoom', $('#enterRoomFormInput').val());
+                    let chatURL = "/chat/" + $('#enterRoomFormInput').val();
+                    $('#enterRoomFormInput').val('');
+                    location.href = chatURL;
+
+                    return false;
+                });
+
                 // Create room submit button clicked
                 $('#createRoomForm').submit(function () {
                     socket.emit('createRoom', $('#createRoomFormInput').val());
-                    //console.log($('#m').val());
                     $('#createRoomFormInput').val('');
                     location.href = '/';
                     return false;
@@ -83,6 +92,12 @@
 
             <!--Go to chat button-->
             <button onclick="window.location='/chat'">Go to chat</button>
+
+            <!--Enter Room FormButton-->
+            <form id="enterRoomForm" action="">
+                <input style="width:10%" id="enterRoomFormInput" autocomplete="off" />
+                <button>Enter Room</button>
+            </form>
 
             <!--Create Room FormButton-->
             <form id="createRoomForm" action="">
