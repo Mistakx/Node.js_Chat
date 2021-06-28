@@ -379,6 +379,21 @@ io.on('connection', socket => {
 
     })
 
+    // Remove friend
+    socket.on('removeFriend', function(friendUsername) {
+
+        let clientUsername = socket.request.user.username;
+
+        console.log("DEBUG 1");
+        console.log(clientUsername);
+        console.log("DEBUG 2");
+        console.log(friendUsername);
+
+        User.findOneAndUpdate({username: clientUsername}, { $pull: { friends: friendUsername } }).exec();
+
+
+    })
+
 
 });
 

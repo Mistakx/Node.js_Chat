@@ -60,3 +60,5 @@ Check if a friend is online.
 Actually correctly implement the MVC design pattern.
 Give more feedback to the user when pressing according to the way the server answers.
 Delete user account option.
+
+I was removing friend on the client side.

@@ -100,6 +100,14 @@
                     return false;
                 });
 
+                // Remove friend button clicked
+                $('#removeFriendForm').submit(function () {
+                    socket.emit('removeFriend', $('#removeFriendUsernameFormInput').val());
+                    $('#removeFriendUsernameFormInput').val('');
+                    location.href = '/';
+                    return false;
+                });
+
 
             });
 
@@ -169,10 +177,17 @@
         <%- userData %>
 
         <p>Friends</p>
+
         <!--Add friend FormButton-->
         <form id="addFriendForm" action="">
             <input style="width:10%" id="addFriendUsernameFormInput" autocomplete="off" />
             <button>Add Friend</button>
+        </form>
+
+        <!--Remove friend FormButton-->
+        <form id="removeFriendForm" action="">
+            <input style="width:10%" id="removeFriendUsernameFormInput" autocomplete="off" />
+            <button>Remove Friend</button>
         </form>
 
     </body>
