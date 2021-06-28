@@ -36,13 +36,20 @@
 
                 let socket = io();
 
+                // Leave room submit button clicked
+                $('#leaveRoomForm').submit(function () {
+                    socket.emit('leaveRoom', $('#leaveRoomIDFormInput').val());
+                    $('#leaveRoomIDFormInput').val('');
+                    location.href = '/';
+                    return false;
+                });
+
                 // Enter room submit button clicked
                 $('#enterRoomForm').submit(function () {
                     // socket.emit('enterRoom', $('#enterRoomFormInput').val());
                     let chatURL = "/chat/" + $('#enterRoomFormInput').val();
                     $('#enterRoomFormInput').val('');
                     location.href = chatURL;
-
                     return false;
                 });
 
@@ -60,6 +67,14 @@
                     //console.log($('#m').val());
                     $('#joinRoomFormInput').val('');
                     location.href = '/';
+                    return false;
+                });
+
+                // Add user to room button clicked
+                $('#addUserToRoomForm').submit(function () {
+                    socket.emit('addUserToRoom', { room: $('#roomIDFormInput').val(), usernameToAdd: $('#usernameToAddFormInput').val() });
+                    $('#roomIDFormInput').val('');
+                    $('#usernameToAddFormInput').val('');
                     return false;
                 });
 
@@ -92,6 +107,19 @@
 
             <!--Go to chat button-->
             <button onclick="window.location='/chat'">Go to chat</button>
+
+            <!--Add user to room FormButton-->
+            <form id="addUserToRoomForm" action="">
+                <input placeholder="Room ID" style="width:10%" id="roomIDFormInput" autocomplete="off" />
+                <input placeholder="Username" style="width:10%" id="usernameToAddFormInput" autocomplete="off" />
+                <button>Add user to Room</button>
+            </form>
+
+            <!--Leave Room FormButton-->
+            <form id="leaveRoomForm" action="">
+                <input style="width:10%" id="leaveRoomIDFormInput" autocomplete="off" />
+                <button>Leave Room</button>
+            </form>
 
             <!--Enter Room FormButton-->
             <form id="enterRoomForm" action="">

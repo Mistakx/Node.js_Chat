@@ -50,7 +50,9 @@ const Message = mongoose.model('Message', messageSchema);
 // Database - Room
 const roomSchema = new mongoose.Schema({
     name: String,
-    users: [String]
+    admin: String,
+    users: [String],
+    privateRoom: Boolean
 });
 const Room = mongoose.model('Room', roomSchema);
 
@@ -98,9 +100,13 @@ io.on('connection', socket => {
     // Client sends chat message
     socket.on('chatMessage', function(clientMessage) {
 
+        // TODO: Maybe remove the ability to actually inject code in the messages and blow up the other client's computers, just a thought lol.
+        // Not too important for now.
+        //<script>alert(" Please don't send me in the chat :( ");</script>
+
+
         // clientMessage = {room: roomID, message: message}
         console.log('New message: ' + JSON.stringify(clientMessage));
-
 
         let message = {msg:clientMessage.message, id:socket.request.user.username};
 
@@ -131,7 +137,6 @@ io.on('connection', socket => {
 
                     console.log("User tried to enter an invalid room.");
                     io.to(socket.id).emit('update', "User tried to enter an invalid room.");
-                    // TODO: Send error message to user
 
 
                 } else {
@@ -154,13 +159,14 @@ io.on('connection', socket => {
 
                         if (userIsInRoom) {
                             console.log("Username is in room.")
+                            io.to(socket.id).emit('update', "Succesfully entered the room.");
                             socket.join(roomID);
                             // console.log(socket.rooms);
                         } else {
                             console.log("User isn't in the room.")
                             //console.log(socket.request)
                             io.to(socket.id).emit('update', "User isn't in the room.");
-                            // TODO: Send error message to user
+
                         }
 
                     }
@@ -182,8 +188,15 @@ io.on('connection', socket => {
 
         let clientUsername = socket.request.user.username
 
-        const instance = new Room({ name: chatName, users: [clientUsername]});
+        const instance = new Room({
+            name: chatName,
+            users: [clientUsername],
+            admin: clientUsername,
+            privateRoom: true
+        });
+
         instance.save(function (err, instance) {
+
             if (err) return console.error(err);
 
         });
@@ -209,7 +222,6 @@ io.on('connection', socket => {
 
                 console.log(data);
 
-
             }
 
         })
@@ -217,6 +229,90 @@ io.on('connection', socket => {
         Room.findByIdAndUpdate(roomID, { $push: { users: clientUsername } }).exec();
 
     })
+
+    // Admin adds user to room
+    socket.on('addUserToRoom', function(clientMessage) {
+
+        // clientMessage = {room: roomID, usernameToAdd: clientUsername}
+
+        let roomID = clientMessage.room;
+        let usernameToAdd = clientMessage.usernameToAdd;
+
+        Room.findById(roomID, (error, data) => {
+
+            if (error) {
+
+                console.log(error);
+
+            }
+
+            else {
+
+                clientUsername = socket.request.user.username;
+                let roomAdmin = data.admin;
+
+                if (clientUsername === roomAdmin) {
+
+                    Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
+
+                }
+
+            }
+
+        })
+
+    })
+
+    // User leaves user to room
+    socket.on('leaveRoom', function(roomID) {
+
+        Room.findById(roomID, (error, data) => {
+
+            if (error) {
+
+                console.log(error);
+
+            }
+
+            else {
+
+                clientUsername = socket.request.user.username;
+
+                console.log("User to delete: " + clientUsername);
+                console.log("Room to delete user from: " + roomID);
+
+
+                // Room.find({ user: clientUsername }).remove().exec();
+                    // Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
+
+
+                    // var diveSchema = new Schema({
+                    //irrelevant fields
+                    // divers: [{
+                    //     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+                    //     meetingLocation: { type: String, enum: ['carpool', 'onSite'], required: true },
+                    //     dives: Number,
+                    //     exercise: { type: Schema.Types.ObjectId, ref: 'Exercise' },
+                    // }]
+                    // });
+                    //
+                    // Say I want to remove the entry where user is 123456789.
+                    //
+                    // Dive.update({ _id: diveId }, { "$pull": { "divers": { "user": userIdToRemove } }}, { safe: true, multi:true }, function(err, obj) {
+                    //     //do something smart
+                    // });
+
+                    // Room.users.pull(clientUsername) // removed
+                    Room.findByIdAndUpdate(roomID, { $pull: { users: clientUsername } }).exec();
+
+
+
+            }
+
+        })
+
+    })
+
 
 });
 
@@ -360,3 +456,4 @@ app.get("/chat/:roomID", ensureLoggedIn('/'), (request, response) => {
 
 });
 
+// TODO: Show room admin on the front end
