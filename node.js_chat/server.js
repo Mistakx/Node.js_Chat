@@ -349,7 +349,33 @@ io.on('connection', socket => {
 
         let clientUsername = socket.request.user.username;
 
-        User.findOneAndUpdate({username: clientUsername}, { $push: { friends: friendUsername } }).exec();
+        // Checks if friend username exists in the database
+
+        User.find({username: friendUsername}, (error, friendUsernameData) => {
+
+            if (error) {
+
+                console.log(error);
+                // TODO: Feedback
+
+            }
+
+            // If friend username doesn't exist
+            else if (friendUsernameData.length === 0) {
+                // TODO: Feedback
+            }
+
+            else {
+
+                console.log(friendUsernameData);
+
+                User.findOneAndUpdate({username: clientUsername}, { $push: { friends: friendUsername } }).exec();
+
+            }
+
+        })
+
+
 
     })
 
