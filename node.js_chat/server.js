@@ -210,7 +210,7 @@ io.on('connection', socket => {
 
         let clientUsername = socket.request.user.username;
 
-        Room.findById(roomID, (error, data) => {
+        Room.findById(roomID, (error, roomData) => {
 
             if (error) {
 
@@ -220,13 +220,17 @@ io.on('connection', socket => {
 
             else {
 
-                console.log(data);
+                let roomIsPrivate = roomData.privateRoom;
+
+                if (!roomIsPrivate) {
+
+                    Room.findByIdAndUpdate(roomID, { $push: { users: clientUsername } }).exec();
+
+                }
 
             }
 
         })
-
-        Room.findByIdAndUpdate(roomID, { $push: { users: clientUsername } }).exec();
 
     })
 
@@ -286,7 +290,6 @@ io.on('connection', socket => {
 
                         Room.findByIdAndUpdate(roomID, { privateRoom: false }).exec();
 
-
                     }
 
                     else if (roomPrivacy === false) {
@@ -303,8 +306,7 @@ io.on('connection', socket => {
 
     })
 
-
-    // User leaves user to room
+    // User leaves room
     socket.on('leaveRoom', function(roomID) {
 
         Room.findById(roomID, (error, data) => {

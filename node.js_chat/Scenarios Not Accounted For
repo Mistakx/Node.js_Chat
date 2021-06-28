@@ -9,3 +9,5 @@ Add user to room:
     Room valid and exists
 
 I think pretty much half of user inputs are unaccounted for at this point. Here's hoping they get the room IDs correct.
+
+Sometimes the page refreshes before the changes are reflected in the database.
