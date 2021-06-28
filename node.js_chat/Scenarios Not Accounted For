@@ -1,0 +1,11 @@
+Admins leaves the room permanently
+User hasn't joined any rooms
+User joins the same chat two times
+
+Add user to room:
+    User doesn't exist
+    Room valid but doesn't exist
+    Room invalid
+    Room valid and exists
+
+I think pretty much half of user inputs are unaccounted for at this point. Here's hoping they get the room IDs correct.

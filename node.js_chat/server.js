@@ -263,6 +263,53 @@ io.on('connection', socket => {
 
     })
 
+    // Admin changes the rooms privacy
+    socket.on('changeRoomPrivacy', function(roomID) {
+
+        Room.findById(roomID, (error, roomData) => {
+
+            if (error) {
+
+                console.log(error);
+
+            }
+
+            else {
+
+                clientUsername = socket.request.user.username;
+                let roomAdmin = roomData.admin;
+                let roomPrivacy = roomData.privateRoom;
+
+                if (clientUsername === roomAdmin) {
+
+                    console.log("DEBUG1")
+
+                    if (roomPrivacy === true) {
+                        console.log("DEBUG2")
+
+                        //roomData.privateRoom = false;
+                        Room.findByIdAndUpdate(roomID, { privateRoom: false }).exec();
+
+
+                    }
+
+                    else if (roomPrivacy === false) {
+                        console.log("DEBUG3")
+
+                        //roomData.privateRoom = true;
+                        Room.findByIdAndUpdate(roomID, { privateRoom: true }).exec();
+
+                    }
+
+                }
+
+            }
+
+        })
+
+    })
+
+
     // User leaves user to room
     socket.on('leaveRoom', function(roomID) {
 
@@ -278,32 +325,10 @@ io.on('connection', socket => {
 
                 clientUsername = socket.request.user.username;
 
-                console.log("User to delete: " + clientUsername);
-                console.log("Room to delete user from: " + roomID);
+                // console.log("User to delete: " + clientUsername);
+                // console.log("Room to delete user from: " + roomID);
 
-
-                // Room.find({ user: clientUsername }).remove().exec();
-                    // Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
-
-
-                    // var diveSchema = new Schema({
-                    //irrelevant fields
-                    // divers: [{
-                    //     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-                    //     meetingLocation: { type: String, enum: ['carpool', 'onSite'], required: true },
-                    //     dives: Number,
-                    //     exercise: { type: Schema.Types.ObjectId, ref: 'Exercise' },
-                    // }]
-                    // });
-                    //
-                    // Say I want to remove the entry where user is 123456789.
-                    //
-                    // Dive.update({ _id: diveId }, { "$pull": { "divers": { "user": userIdToRemove } }}, { safe: true, multi:true }, function(err, obj) {
-                    //     //do something smart
-                    // });
-
-                    // Room.users.pull(clientUsername) // removed
-                    Room.findByIdAndUpdate(roomID, { $pull: { users: clientUsername } }).exec();
+                Room.findByIdAndUpdate(roomID, { $pull: { users: clientUsername } }).exec();
 
 
 

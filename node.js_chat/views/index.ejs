@@ -78,9 +78,15 @@
                     return false;
                 });
 
+                // Change room privacy settings button clicked
+                $('#changeRoomPrivacyForm').submit(function () {
+                    socket.emit('changeRoomPrivacy', $('#changePrivacyRoomIDFormInput').val());
+                    $('#changePrivacyRoomIDFormInput').val('');
+                    location.href = '/';
+                    return false;
+                });
+
             });
-
-
 
         </script>
 
@@ -137,6 +143,12 @@
             <form id="joinRoomForm" action="">
                 <input style="width:10%" id="joinRoomFormInput" autocomplete="off" />
                 <button>Join Room</button>
+            </form>
+
+            <!--Change room privacy settings FormButton-->
+            <form id="changeRoomPrivacyForm" action="">
+                <input style="width:10%" id="changePrivacyRoomIDFormInput" autocomplete="off" />
+                <button>Change room privacy</button>
             </form>
 
         </div>
