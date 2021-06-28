@@ -282,21 +282,15 @@ io.on('connection', socket => {
 
                 if (clientUsername === roomAdmin) {
 
-                    console.log("DEBUG1")
-
                     if (roomPrivacy === true) {
-                        console.log("DEBUG2")
 
-                        //roomData.privateRoom = false;
                         Room.findByIdAndUpdate(roomID, { privateRoom: false }).exec();
 
 
                     }
 
                     else if (roomPrivacy === false) {
-                        console.log("DEBUG3")
 
-                        //roomData.privateRoom = true;
                         Room.findByIdAndUpdate(roomID, { privateRoom: true }).exec();
 
                     }
@@ -378,7 +372,18 @@ app.get("/", (request, response) => {
                 // Parse user's rooms data
                 for (let i = 0; i < clientRooms.length; i++) {
 
-                    chatRoomsParsedInfo = chatRoomsParsedInfo + '<p>' + clientRooms[i]._id.toString() + " - " + clientRooms[i].name.toString() + '</p>';
+                    // Get the room's privacy
+                    let roomPrivacy;
+                    if (clientRooms[i].privateRoom) {
+                        roomPrivacy = "Private";
+                    }
+                    else {
+                        roomPrivacy = "Public";
+                    }
+
+                    roomAdmin = clientRooms[i].admin;
+
+                    chatRoomsParsedInfo = chatRoomsParsedInfo + '<p>' + clientRooms[i]._id.toString() + " - " + clientRooms[i].name.toString() + ' (' + roomPrivacy + ') - ' + 'Admin: ' + roomAdmin + '</p>';
 
                 }
 
@@ -480,5 +485,3 @@ app.get("/chat/:roomID", ensureLoggedIn('/'), (request, response) => {
     response.render('chat.ejs', {roomID : request.params.roomID});
 
 });
-
-// TODO: Show room admin on the front end
