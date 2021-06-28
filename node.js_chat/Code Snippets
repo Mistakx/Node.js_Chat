@@ -1,5 +1,5 @@
 Socket.IO username
-socket.request.user.username
+let clientUsername = socket.request.user.username;
 
 URL Parameters
 app.get("/chat/:roomID", ensureLoggedIn('/'), (request, response) => {

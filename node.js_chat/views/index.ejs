@@ -36,6 +36,8 @@
 
                 let socket = io();
 
+                // Rooms
+
                 // Leave room submit button clicked
                 $('#leaveRoomForm').submit(function () {
                     socket.emit('leaveRoom', $('#leaveRoomIDFormInput').val());
@@ -86,6 +88,19 @@
                     return false;
                 });
 
+
+
+                // Friends
+
+                // Add friend button clicked
+                $('#addFriendForm').submit(function () {
+                    socket.emit('addFriend', $('#addFriendUsernameFormInput').val());
+                    $('#addFriendUsernameFormInput').val('');
+                    location.href = '/';
+                    return false;
+                });
+
+
             });
 
         </script>
@@ -110,9 +125,6 @@
                 </div>
 
             </form>
-
-            <!--Go to chat button-->
-            <button onclick="window.location='/chat'">Go to chat</button>
 
             <!--Add user to room FormButton-->
             <form id="addUserToRoomForm" action="">
@@ -155,6 +167,13 @@
 
         <p>Chat Rooms</p>
         <%- userData %>
+
+        <p>Friends</p>
+        <!--Add friend FormButton-->
+        <form id="addFriendForm" action="">
+            <input style="width:10%" id="addFriendUsernameFormInput" autocomplete="off" />
+            <button>Add Friend</button>
+        </form>
 
     </body>
 

@@ -35,7 +35,9 @@ db.once('open', function() {
 const userSchema = new mongoose.Schema({
     username: String,
     password: String,
+    friends: [String],
 });
+
 userSchema.methods.verifyPassword = function (password) {
     return password === this.password;
 }
@@ -121,6 +123,10 @@ io.on('connection', socket => {
             if (err) return console.error(err);
         });
     })
+
+
+
+    // Rooms
 
     // Client enters a chat room
     socket.on('enteredRoom', function(roomID) {
@@ -331,6 +337,19 @@ io.on('connection', socket => {
             }
 
         })
+
+    })
+
+
+
+    // Friends
+
+    // User adds friend
+    socket.on('addFriend', function(friendUsername) {
+
+        let clientUsername = socket.request.user.username;
+
+        User.findOneAndUpdate({username: clientUsername}, { $push: { friends: friendUsername } }).exec();
 
     })
 

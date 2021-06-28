@@ -1,6 +1,7 @@
-Admins leaves the room permanently
-User hasn't joined any rooms
-User joins the same chat two times
+Admins leaves the room permanently.
+User hasn't joined any rooms.
+User joins the same chat two times.
+Two users with the same username.
 
 Add user to room:
     User doesn't exist
@@ -9,5 +10,8 @@ Add user to room:
     Room valid and exists
 
 I think pretty much half of user inputs are unaccounted for at this point. Here's hoping they get the room IDs correct.
+Small or empty passwords and usernames.
 
 Sometimes the page refreshes before the changes are reflected in the database.
+
+// TODO: Give admin rights
