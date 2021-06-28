@@ -52,9 +52,15 @@ const Message = mongoose.model('Message', messageSchema);
 // Database - Room
 const roomSchema = new mongoose.Schema({
     name: String,
+    creator: String,
     admin: String,
     users: [String],
-    privateRoom: Boolean
+    privateRoom: Boolean,
+    invitationType: Number,
+    // 1 - Todos os participantes podem convidar outros participantes a qualquer momento.
+    // 2 - Os convites a novos participantes têm de ser pré-aprovados (ver votações).
+    // 3 - Apenas os administradores podem fazer convites (o criador é inicialmente o único administrador).
+    // 4 - Apenas o criador da conversa pode fazer convites.
 });
 const Room = mongoose.model('Room', roomSchema);
 
@@ -124,10 +130,6 @@ io.on('connection', socket => {
         });
     })
 
-
-
-    // Rooms
-
     // Client enters a chat room
     socket.on('enteredRoom', function(roomID) {
 
@@ -137,77 +139,59 @@ io.on('connection', socket => {
 
         console.log("User " + clientUsername + " entered room " + roomID);
 
-            Room.findById(roomID, (error, roomData) => {
+        Room.findById(roomID, (error, roomData) => {
 
-                if (error) {
+            if (error) {
 
-                    console.log("User tried to enter an invalid room.");
-                    io.to(socket.id).emit('update', "User tried to enter an invalid room.");
+                console.log("User tried to enter an invalid room.");
+                io.to(socket.id).emit('update', "User tried to enter an invalid room.");
 
 
-                } else {
+            } else {
 
-                    try {
+                try {
 
-                        let roomUsers = roomData.users;
-                        let userIsInRoom = false;
+                    let roomUsers = roomData.users;
+                    let userIsInRoom = false;
 
-                        for (let i = 0; i < roomUsers.length; i++) {
+                    for (let i = 0; i < roomUsers.length; i++) {
 
-                            // User is in the room
-                            if (roomUsers[i] === clientUsername) {
-                                userIsInRoom = true;
-                                break;
-
-                            }
-
-                        }
-
-                        if (userIsInRoom) {
-                            console.log("Username is in room.")
-                            io.to(socket.id).emit('update', "Succesfully entered the room.");
-                            socket.join(roomID);
-                            // console.log(socket.rooms);
-                        } else {
-                            console.log("User isn't in the room.")
-                            //console.log(socket.request)
-                            io.to(socket.id).emit('update', "User isn't in the room.");
+                        // User is in the room
+                        if (roomUsers[i] === clientUsername) {
+                            userIsInRoom = true;
+                            break;
 
                         }
 
                     }
 
-                    catch (exception) {
-                        console.log("User tried to enter a valid room that doesn't exist.");
-                        io.to(socket.id).emit('update', "User tried to enter a valid room that doesn't exist.");
+                    if (userIsInRoom) {
+                        console.log("Username is in room.")
+                        io.to(socket.id).emit('update', "Succesfully entered the room.");
+                        socket.join(roomID);
+                        // console.log(socket.rooms);
+                    } else {
+                        console.log("User isn't in the room.")
+                        //console.log(socket.request)
+                        io.to(socket.id).emit('update', "User isn't in the room.");
+
                     }
+
                 }
 
-            })
+                catch (exception) {
+                    console.log("User tried to enter a valid room that doesn't exist.");
+                    io.to(socket.id).emit('update', "User tried to enter a valid room that doesn't exist.");
+                }
+            }
+
+        })
 
     })
 
-    // Client creates a chat room
-    socket.on('createRoom', function(chatName) {
 
-        // console.log('chatName: ' + chatName);
+    // Rooms
 
-        let clientUsername = socket.request.user.username
-
-        const instance = new Room({
-            name: chatName,
-            users: [clientUsername],
-            admin: clientUsername,
-            privateRoom: true
-        });
-
-        instance.save(function (err, instance) {
-
-            if (err) return console.error(err);
-
-        });
-
-    })
 
     // Client joins a chat room
     socket.on('joinRoom', function(roomID) {
@@ -240,13 +224,8 @@ io.on('connection', socket => {
 
     })
 
-    // Admin adds user to room
-    socket.on('addUserToRoom', function(clientMessage) {
-
-        // clientMessage = {room: roomID, usernameToAdd: clientUsername}
-
-        let roomID = clientMessage.room;
-        let usernameToAdd = clientMessage.usernameToAdd;
+    // User leaves room
+    socket.on('leaveRoom', function(roomID) {
 
         Room.findById(roomID, (error, data) => {
 
@@ -259,17 +238,42 @@ io.on('connection', socket => {
             else {
 
                 clientUsername = socket.request.user.username;
-                let roomAdmin = data.admin;
 
-                if (clientUsername === roomAdmin) {
+                // console.log("User to delete: " + clientUsername);
+                // console.log("Room to delete user from: " + roomID);
 
-                    Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
+                Room.findByIdAndUpdate(roomID, { $pull: { users: clientUsername } }).exec();
 
-                }
+
 
             }
 
         })
+
+    })
+
+
+    // Client creates a chat room
+    socket.on('createRoom', function(chatName) {
+
+        // console.log('chatName: ' + chatName);
+
+        let clientUsername = socket.request.user.username
+
+        const instance = new Room({
+            name: chatName,
+            users: [clientUsername],
+            admin: clientUsername,
+            creator: clientUsername,
+            privateRoom: true,
+            invitationType: 4
+        });
+
+        instance.save(function (err, instance) {
+
+            if (err) return console.error(err);
+
+        });
 
     })
 
@@ -312,10 +316,26 @@ io.on('connection', socket => {
 
     })
 
-    // User leaves room
-    socket.on('leaveRoom', function(roomID) {
+    // Admin changes the room invitation settings
+    socket.on('changeInvitationSettings', function(clientMessage) {
 
-        Room.findById(roomID, (error, data) => {
+        let roomID = clientMessage.roomID;
+        let invitationType = clientMessage.invitationType;
+
+        Room.findByIdAndUpdate(roomID, { $set: { invitationType: invitationType } }).exec();
+
+    })
+
+    // Admin adds user to room
+    socket.on('addUserToRoom', function(clientMessage) {
+
+        // clientMessage = {room: roomID, usernameToAdd: clientUsername}
+
+        let clientUsername = socket.request.user.username;
+        let roomID = clientMessage.room;
+        let usernameToAdd = clientMessage.usernameToAdd;
+
+        Room.findById(roomID, (error, roomData) => {
 
             if (error) {
 
@@ -325,12 +345,38 @@ io.on('connection', socket => {
 
             else {
 
-                clientUsername = socket.request.user.username;
+                let roomInvitationType = roomData.invitationType;
+                let roomAdmin = roomData.admin;
+                let roomCreator = roomData.creator;
 
-                // console.log("User to delete: " + clientUsername);
-                // console.log("Room to delete user from: " + roomID);
+                // Everyone can invite
+                if (roomInvitationType === 1) {
 
-                Room.findByIdAndUpdate(roomID, { $pull: { users: clientUsername } }).exec();
+                        Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
+
+                }
+
+                // Only admin can invite
+                else if (roomInvitationType === 3) {
+
+                    if (clientUsername === roomAdmin) {
+
+                        Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
+
+                    }
+
+                }
+
+                // Only creator can invite
+                else if (roomInvitationType === 4) {
+
+                    if (clientUsername === roomCreator) {
+
+                        Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
+
+                    }
+
+                }
 
 
 
@@ -339,6 +385,8 @@ io.on('connection', socket => {
         })
 
     })
+
+
 
 
 
@@ -430,7 +478,7 @@ app.get("/", (request, response) => {
                 // Parse user's rooms data
                 for (let i = 0; i < clientRoomsData.length; i++) {
 
-                    // Get the room's privacy
+                    // Parse the room's privacy
                     let roomPrivacy;
                     if (clientRoomsData[i].privateRoom) {
                         roomPrivacy = "Private";
@@ -439,9 +487,28 @@ app.get("/", (request, response) => {
                         roomPrivacy = "Public";
                     }
 
-                    roomAdmin = clientRoomsData[i].admin;
+                    // Parse the room's invitation type
+                    let roomInvitationType = "";
+                    if (clientRoomsData[i].invitationType === 1) {
+                        roomInvitationType = "Everyone can invite new people";
+                    }
+                    else if (clientRoomsData[i].invitationType === 3) {
+                        roomInvitationType = "Only admins can invite new people";
+                    }
+                    else if (clientRoomsData[i].invitationType === 4) {
+                        roomInvitationType = "Only the creator can invite new people";
+                    }
 
-                    userRoomsParsedInfo = userRoomsParsedInfo + '<p>' + clientRoomsData[i]._id.toString() + " - " + clientRoomsData[i].name.toString() + ' (' + roomPrivacy + ') - ' + 'Admin: ' + roomAdmin + '</p>';
+
+
+                    roomID = clientRoomsData[i]._id;
+                    roomName = clientRoomsData[i].name;
+                    roomAdmin = clientRoomsData[i].admin;
+                    roomCreator = clientRoomsData[i].creator;
+
+
+
+                    userRoomsParsedInfo = userRoomsParsedInfo + '<p>' + roomID + " - " + roomName + ' (' + roomPrivacy + ') - ' + 'Admin: ' + roomAdmin + ' - Creator: ' + roomCreator + '<br>' + '(' + roomInvitationType + ')' + '</p>';
 
                 }
 
@@ -461,7 +528,7 @@ app.get("/", (request, response) => {
 
                         for (let i = 0; i < clientData.friends.length; i++) {
 
-                            userFriendsParsedInfo = userFriendsParsedInfo + '<p>' + clientData.friends[i].toString() + '</p>';
+                            userFriendsParsedInfo = userFriendsParsedInfo + 'Friend: ' + clientData.friends[i].toString() + '<br>';
 
                         }
 

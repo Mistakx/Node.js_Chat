@@ -15,36 +15,23 @@
             function addUserDetails() {
 
                 const socket = io();
-                const socketIdSpan = document.getElementById("socketId");
+                // const socketIdSpan = document.getElementById("socketId");
                 const usernameSpan = document.getElementById("username");
 
                 socket.on('connect', () => {
 
-                    socketIdSpan.innerText = socket.id;
+                    // socketIdSpan.innerText = socket.id;
 
                     socket.emit('whoami', (username) => {
                         usernameSpan.innerText = username;
                     });
 
                 });
-
-                // TODO: Add User Rooms
-
             };
 
             $(document).ready(function () {
 
                 let socket = io();
-
-                // Rooms
-
-                // Leave room submit button clicked
-                $('#leaveRoomForm').submit(function () {
-                    socket.emit('leaveRoom', $('#leaveRoomIDFormInput').val());
-                    $('#leaveRoomIDFormInput').val('');
-                    location.href = '/';
-                    return false;
-                });
 
                 // Enter room submit button clicked
                 $('#enterRoomForm').submit(function () {
@@ -55,13 +42,9 @@
                     return false;
                 });
 
-                // Create room submit button clicked
-                $('#createRoomForm').submit(function () {
-                    socket.emit('createRoom', $('#createRoomFormInput').val());
-                    $('#createRoomFormInput').val('');
-                    location.href = '/';
-                    return false;
-                });
+
+
+                // Room Settings
 
                 // Join room submit button clicked
                 $('#joinRoomForm').submit(function () {
@@ -72,11 +55,20 @@
                     return false;
                 });
 
-                // Add user to room button clicked
-                $('#addUserToRoomForm').submit(function () {
-                    socket.emit('addUserToRoom', { room: $('#roomIDFormInput').val(), usernameToAdd: $('#usernameToAddFormInput').val() });
-                    $('#roomIDFormInput').val('');
-                    $('#usernameToAddFormInput').val('');
+                // Leave room submit button clicked
+                $('#leaveRoomForm').submit(function () {
+                    socket.emit('leaveRoom', $('#leaveRoomIDFormInput').val());
+                    $('#leaveRoomIDFormInput').val('');
+                    location.href = '/';
+                    return false;
+                });
+
+
+                // Create room submit button clicked
+                $('#createRoomForm').submit(function () {
+                    socket.emit('createRoom', $('#createRoomFormInput').val());
+                    $('#createRoomFormInput').val('');
+                    location.href = '/';
                     return false;
                 });
 
@@ -85,6 +77,36 @@
                     socket.emit('changeRoomPrivacy', $('#changePrivacyRoomIDFormInput').val());
                     $('#changePrivacyRoomIDFormInput').val('');
                     location.href = '/';
+                    return false;
+                });
+
+                // Invitation settings button clicked
+                $("#changeRoomInvitationSettingsForm button").click(function (event) {
+                    event.preventDefault()
+
+                    if ($(this).attr("value") == "1") {
+                        socket.emit('changeInvitationSettings', {roomID: $('#changeInvitationSettingsRoomIDFormInput').val(), invitationType: 1});
+                        $('#changeInvitationSettingsRoomIDFormInput').val('');
+                        //$("#myform").submit();
+                    }
+
+                    else if ($(this).attr("value") == "3") {
+                        socket.emit('changeInvitationSettings', {roomID: $('#changeInvitationSettingsRoomIDFormInput').val(), invitationType: 3});
+                        $('#changeInvitationSettingsRoomIDFormInput').val('');
+                    }
+
+                    else if ($(this).attr("value") == "4") {
+                        socket.emit('changeInvitationSettings', {roomID: $('#changeInvitationSettingsRoomIDFormInput').val(), invitationType: 4});
+                        $('#changeInvitationSettingsRoomIDFormInput').val('');
+                    }
+
+                });
+
+                // Add user to room button clicked
+                $('#addUserToRoomForm').submit(function () {
+                    socket.emit('addUserToRoom', { room: $('#roomIDFormInput').val(), usernameToAdd: $('#usernameToAddFormInput').val() });
+                    $('#roomIDFormInput').val('');
+                    $('#usernameToAddFormInput').val('');
                     return false;
                 });
 
@@ -118,65 +140,85 @@
 
     <body>
 
-        <p>Authenticated!</p>
-        <p>Socket ID: <span id="socketId"></span></p>
+        <!--<p>Authenticated!</p>-->
+        <!--<p>Socket ID: <span id="socketId"></span></p>-->
         <p>Username: <span id="username"></span></p>
         <script>addUserDetails();</script> <!-- Fills the page with the authenticated user details-->
 
-        <div>
+        <!--Logout button-->
+        <form action="/logout" method="post">
 
-            <!--Logout button-->
-            <form action="/logout" method="post">
+            <div>
+                <input type="submit" value="Log out" />
+            </div>
 
-                <div>
-                    <input type="submit" value="Log out" />
-                </div>
+        </form>
 
-            </form>
+        <!--Enter Room FormButton-->
+        <form id="enterRoomForm" action="">
+            <input style="width:10%" id="enterRoomFormInput" autocomplete="off" />
+            <button>Enter Room</button>
+        </form>
 
-            <!--Add user to room FormButton-->
-            <form id="addUserToRoomForm" action="">
-                <input placeholder="Room ID" style="width:10%" id="roomIDFormInput" autocomplete="off" />
-                <input placeholder="Username" style="width:10%" id="usernameToAddFormInput" autocomplete="off" />
-                <button>Add user to Room</button>
-            </form>
 
-            <!--Leave Room FormButton-->
-            <form id="leaveRoomForm" action="">
-                <input style="width:10%" id="leaveRoomIDFormInput" autocomplete="off" />
-                <button>Leave Room</button>
-            </form>
+        <hr>
 
-            <!--Enter Room FormButton-->
-            <form id="enterRoomForm" action="">
-                <input style="width:10%" id="enterRoomFormInput" autocomplete="off" />
-                <button>Enter Room</button>
-            </form>
+        <p>Room Settings</p>
 
-            <!--Create Room FormButton-->
-            <form id="createRoomForm" action="">
-                <input style="width:10%" id="createRoomFormInput" autocomplete="off" />
-                <button>Create Room</button>
-            </form>
 
-            <!--Join Room FormButton-->
-            <form id="joinRoomForm" action="">
-                <input style="width:10%" id="joinRoomFormInput" autocomplete="off" />
-                <button>Join Room</button>
-            </form>
+        <!--Join Room FormButton-->
+        <form id="joinRoomForm" action="">
+            <input style="width:10%" id="joinRoomFormInput" autocomplete="off" />
+            <button>Join Room</button>
+        </form>
 
-            <!--Change room privacy settings FormButton-->
-            <form id="changeRoomPrivacyForm" action="">
-                <input style="width:10%" id="changePrivacyRoomIDFormInput" autocomplete="off" />
-                <button>Change room privacy</button>
-            </form>
+        <!--Leave Room FormButton-->
+        <form id="leaveRoomForm" action="">
+            <input style="width:10%" id="leaveRoomIDFormInput" autocomplete="off" />
+            <button>Leave Room</button>
+        </form>
 
-        </div>
 
-        <p>Chat Rooms</p>
+        <br>
+
+
+        <!--Create Room FormButton-->
+        <form id="createRoomForm" action="">
+            <input style="width:10%" id="createRoomFormInput" autocomplete="off" />
+            <button>Create Room</button>
+        </form>
+
+        <!--Change room privacy settings FormButton-->
+        <form id="changeRoomPrivacyForm" action="">
+            <input style="width:10%" id="changePrivacyRoomIDFormInput" autocomplete="off" />
+            <button>Change room privacy</button>
+        </form>
+
+        <!--Change room invitation settings FormButton-->
+        <form id="changeRoomInvitationSettingsForm" action="">
+            Invitation Settings:
+            <input style="width:10%" id="changeInvitationSettingsRoomIDFormInput" autocomplete="off" />
+            <button type="submit" value="1">Everyone can invite</button>
+            <button type="submit" value="3">Only admins can invite</button>
+            <button type="submit" value="4">Only creator can invite</button>
+        </form>
+
+        <!--Add user to room FormButton-->
+        <form id="addUserToRoomForm" action="">
+            <input placeholder="Room ID" style="width:10%" id="roomIDFormInput" autocomplete="off" />
+            <input placeholder="Username" style="width:10%" id="usernameToAddFormInput" autocomplete="off" />
+            <button>Add user to Room</button>
+        </form>
+
+
+        <p>Rooms</p>
         <%- userRoomsParsedData %>
 
-        <p>Friends</p>
+
+        <hr>
+
+
+        <p>Settings</p>
 
         <!--Add friend FormButton-->
         <form id="addFriendForm" action="">
@@ -189,6 +231,8 @@
             <input style="width:10%" id="removeFriendUsernameFormInput" autocomplete="off" />
             <button>Remove Friend</button>
         </form>
+
+        <p>Friends</p>
 
         <%- userFriendsParsedData %>
 

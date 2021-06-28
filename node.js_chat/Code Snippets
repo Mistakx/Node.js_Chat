@@ -16,3 +16,6 @@ console.log(socket.rooms);
 
 Socket.IO ID
 socket.id;
+
+// Set room database setting
+Room.findByIdAndUpdate(roomID, { $set: { invitationType: invitationType } }).exec();
