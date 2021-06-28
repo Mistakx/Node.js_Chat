@@ -1,7 +1,9 @@
 Admins leaves the room permanently.
 User hasn't joined any rooms.
 User joins the same chat two times.
+User adds the same friend two times.
 Two users with the same username.
+User adding himself as friend.
 
 Add user to room:
     User doesn't exist

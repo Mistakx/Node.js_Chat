@@ -113,8 +113,8 @@ io.on('connection', socket => {
         let message = {msg:clientMessage.message, id:socket.request.user.username};
 
         //socket.broadcast.to(user.room).emit('message',formatMessage(botName, `${user.username} has joined the chat`));
-        console.log(socket.rooms); // prints all elements of the rooms object
-        console.log(clientMessage.room)
+        // console.log(socket.rooms); // prints all elements of the rooms object
+        // console.log(clientMessage.room)
         io.to(clientMessage.room).emit('chatMessage', message);
         //io.emit('chatMessage', message);
 
@@ -353,6 +353,8 @@ io.on('connection', socket => {
 
         User.find({username: friendUsername}, (error, friendUsernameData) => {
 
+            // TODO: Try this with the findOne method, and check if friendUsernameData is still an array, or just undefined
+
             if (error) {
 
                 console.log(error);
@@ -367,7 +369,7 @@ io.on('connection', socket => {
 
             else {
 
-                console.log(friendUsernameData);
+                //console.log(friendUsernameData);
 
                 User.findOneAndUpdate({username: clientUsername}, { $push: { friends: friendUsername } }).exec();
 
@@ -383,11 +385,6 @@ io.on('connection', socket => {
     socket.on('removeFriend', function(friendUsername) {
 
         let clientUsername = socket.request.user.username;
-
-        console.log("DEBUG 1");
-        console.log(clientUsername);
-        console.log("DEBUG 2");
-        console.log(friendUsername);
 
         User.findOneAndUpdate({username: clientUsername}, { $pull: { friends: friendUsername } }).exec();
 
@@ -416,7 +413,9 @@ app.get("/", (request, response) => {
         let clientUsername = request.user.username
 
         // Find authenticated user's rooms
-        Room.find({users : clientUsername}, (error, clientRooms) => {
+        Room.find({users : clientUsername}, (error, clientRoomsData) => {
+
+            //console.log(clientRoomsData);
 
             if (error) {
 
@@ -426,30 +425,53 @@ app.get("/", (request, response) => {
 
             else {
 
-                let chatRoomsParsedInfo = "";
-                // console.log(clientRooms);
-                // console.log(clientRooms[0]);
-                // console.log(clientRooms[0]._id);
+                let userRoomsParsedInfo = "";
 
                 // Parse user's rooms data
-                for (let i = 0; i < clientRooms.length; i++) {
+                for (let i = 0; i < clientRoomsData.length; i++) {
 
                     // Get the room's privacy
                     let roomPrivacy;
-                    if (clientRooms[i].privateRoom) {
+                    if (clientRoomsData[i].privateRoom) {
                         roomPrivacy = "Private";
                     }
                     else {
                         roomPrivacy = "Public";
                     }
 
-                    roomAdmin = clientRooms[i].admin;
+                    roomAdmin = clientRoomsData[i].admin;
 
-                    chatRoomsParsedInfo = chatRoomsParsedInfo + '<p>' + clientRooms[i]._id.toString() + " - " + clientRooms[i].name.toString() + ' (' + roomPrivacy + ') - ' + 'Admin: ' + roomAdmin + '</p>';
+                    userRoomsParsedInfo = userRoomsParsedInfo + '<p>' + clientRoomsData[i]._id.toString() + " - " + clientRoomsData[i].name.toString() + ' (' + roomPrivacy + ') - ' + 'Admin: ' + roomAdmin + '</p>';
 
                 }
 
-                response.render('index.ejs', {userData: chatRoomsParsedInfo});
+                // Find authenticated user's friends
+                User.findOne({username: clientUsername}, (error, clientData) => {
+
+                    if (error) {
+
+                        console.log(error)
+
+                    }
+
+                    // Parse user's friends
+                    else {
+
+                        let userFriendsParsedInfo = "";
+
+                        for (let i = 0; i < clientData.friends.length; i++) {
+
+                            userFriendsParsedInfo = userFriendsParsedInfo + '<p>' + clientData.friends[i].toString() + '</p>';
+
+                        }
+
+                        response.render('index.ejs', {userRoomsParsedData: userRoomsParsedInfo, userFriendsParsedData: userFriendsParsedInfo});
+
+                    }
+
+
+                });
+
 
             }
 
