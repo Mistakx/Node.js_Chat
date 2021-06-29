@@ -61,6 +61,8 @@ const roomSchema = new mongoose.Schema({
     // 2 - Os convites a novos participantes têm de ser pré-aprovados (ver votações).
     // 3 - Apenas os administradores podem fazer convites (o criador é inicialmente o único administrador).
     // 4 - Apenas o criador da conversa pode fazer convites.
+    pastNames: [String]
+
 });
 const Room = mongoose.model('Room', roomSchema);
 
@@ -259,6 +261,11 @@ io.on('connection', socket => {
         // console.log('chatName: ' + chatName);
 
         let clientUsername = socket.request.user.username
+        // let chatName = chatName;
+
+        if (chatName === "") {
+            chatName = new Date(Date.now()).toLocaleString();
+        }
 
         const instance = new Room({
             name: chatName,
@@ -277,8 +284,10 @@ io.on('connection', socket => {
 
     })
 
-    // Admin changes the rooms privacy
-    socket.on('changeRoomPrivacy', function(roomID) {
+    // Client deletes a chat room
+    socket.on('deleteRoom', function(roomID) {
+
+        let clientUsername = socket.request.user.username
 
         Room.findById(roomID, (error, roomData) => {
 
@@ -286,9 +295,70 @@ io.on('connection', socket => {
 
                 console.log(error);
 
+            } else {
+
+
+                let roomCreator = roomData.creator;
+
+                // Only creator can delete a chat room
+                if (clientUsername === roomCreator) {
+
+                    Room.findByIdAndRemove(roomID).exec();
+
+                }
+
             }
 
-            else {
+
+        })
+
+    })
+
+    // Admin changes rooms name
+    socket.on('renameRoom', function (message) {
+
+        let roomID = message.roomID;
+        let newRoomName = message.newRoomName;
+
+        Room.findById(roomID, (error, roomData) => {
+
+            if (error) {
+
+                console.log(error);
+
+            } else {
+
+                clientUsername = socket.request.user.username;
+                let roomAdmin = roomData.admin;
+
+                if (clientUsername === roomAdmin) {
+
+                    let currentRoomName = roomData.name;
+                    let currentDate = new Date(Date.now()).toLocaleString();
+                    let roomNameAndDateChanged = currentRoomName + ' - ' + currentDate;
+
+                    Room.findByIdAndUpdate(roomID, { $set: { name: newRoomName } }).exec();
+                    Room.findByIdAndUpdate(roomID, { $push: { pastNames: roomNameAndDateChanged  }}).exec();
+
+                }
+
+            }
+
+        })
+
+    })
+
+
+    // Admin changes the rooms privacy
+    socket.on('changeRoomPrivacy', function (roomID) {
+
+        Room.findById(roomID, (error, roomData) => {
+
+            if (error) {
+
+                console.log(error);
+
+            } else {
 
                 clientUsername = socket.request.user.username;
                 let roomAdmin = roomData.admin;
@@ -298,13 +368,11 @@ io.on('connection', socket => {
 
                     if (roomPrivacy === true) {
 
-                        Room.findByIdAndUpdate(roomID, { privateRoom: false }).exec();
+                        Room.findByIdAndUpdate(roomID, {privateRoom: false}).exec();
 
-                    }
+                    } else if (roomPrivacy === false) {
 
-                    else if (roomPrivacy === false) {
-
-                        Room.findByIdAndUpdate(roomID, { privateRoom: true }).exec();
+                        Room.findByIdAndUpdate(roomID, {privateRoom: true}).exec();
 
                     }
 
@@ -317,17 +385,17 @@ io.on('connection', socket => {
     })
 
     // Admin changes the room invitation settings
-    socket.on('changeInvitationSettings', function(clientMessage) {
+    socket.on('changeInvitationSettings', function (clientMessage) {
 
         let roomID = clientMessage.roomID;
         let invitationType = clientMessage.invitationType;
 
-        Room.findByIdAndUpdate(roomID, { $set: { invitationType: invitationType } }).exec();
+        Room.findByIdAndUpdate(roomID, {$set: {invitationType: invitationType}}).exec();
 
     })
 
-    // Admin adds user to room
-    socket.on('addUserToRoom', function(clientMessage) {
+    // Client adds user to room
+    socket.on('addUserToRoom', function (clientMessage) {
 
         // clientMessage = {room: roomID, usernameToAdd: clientUsername}
 
@@ -341,9 +409,7 @@ io.on('connection', socket => {
 
                 console.log(error);
 
-            }
-
-            else {
+            } else {
 
                 let roomInvitationType = roomData.invitationType;
                 let roomAdmin = roomData.admin;
@@ -352,7 +418,7 @@ io.on('connection', socket => {
                 // Everyone can invite
                 if (roomInvitationType === 1) {
 
-                        Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
+                    Room.findByIdAndUpdate(roomID, {$push: {users: usernameToAdd}}).exec();
 
                 }
 
@@ -361,7 +427,7 @@ io.on('connection', socket => {
 
                     if (clientUsername === roomAdmin) {
 
-                        Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
+                        Room.findByIdAndUpdate(roomID, {$push: {users: usernameToAdd}}).exec();
 
                     }
 
@@ -372,12 +438,11 @@ io.on('connection', socket => {
 
                     if (clientUsername === roomCreator) {
 
-                        Room.findByIdAndUpdate(roomID, { $push: { users: usernameToAdd } }).exec();
+                        Room.findByIdAndUpdate(roomID, {$push: {users: usernameToAdd}}).exec();
 
                     }
 
                 }
-
 
 
             }
@@ -387,13 +452,10 @@ io.on('connection', socket => {
     })
 
 
-
-
-
     // Friends
 
     // User adds friend
-    socket.on('addFriend', function(friendUsername) {
+    socket.on('addFriend', function (friendUsername) {
 
         let clientUsername = socket.request.user.username;
 
@@ -413,36 +475,30 @@ io.on('connection', socket => {
             // If friend username doesn't exist
             else if (friendUsernameData.length === 0) {
                 // TODO: Feedback
-            }
-
-            else {
+            } else {
 
                 //console.log(friendUsernameData);
 
-                User.findOneAndUpdate({username: clientUsername}, { $push: { friends: friendUsername } }).exec();
+                User.findOneAndUpdate({username: clientUsername}, {$push: {friends: friendUsername}}).exec();
 
             }
 
         })
 
 
-
     })
 
     // Remove friend
-    socket.on('removeFriend', function(friendUsername) {
+    socket.on('removeFriend', function (friendUsername) {
 
         let clientUsername = socket.request.user.username;
 
-        User.findOneAndUpdate({username: clientUsername}, { $pull: { friends: friendUsername } }).exec();
+        User.findOneAndUpdate({username: clientUsername}, {$pull: {friends: friendUsername}}).exec();
 
 
     })
 
-
-});
-
-
+})
 
 // Server start
 server.listen(3000, function(){
@@ -508,7 +564,7 @@ app.get("/", (request, response) => {
 
 
 
-                    userRoomsParsedInfo = userRoomsParsedInfo + '<p>' + roomID + " - " + roomName + ' (' + roomPrivacy + ') - ' + 'Admin: ' + roomAdmin + ' - Creator: ' + roomCreator + '<br>' + '(' + roomInvitationType + ')' + '</p>';
+                    userRoomsParsedInfo = userRoomsParsedInfo + '<p>' + '<b>' + roomName + ' (' + roomPrivacy + ') - ' + '</b>' +  roomID + '<br>' + 'Admin: ' + roomAdmin + ' | Creator: ' + roomCreator + '<br>' + '(' + roomInvitationType + ')' + '</p>';
 
                 }
 
@@ -566,7 +622,7 @@ app.post("/register",function(request, response){
 
     // New user in the DB
     const instance = new User({ username: request.body.username, password: request.body.password });
-    
+
     instance.save(function (err, instance) {
         if (err) return console.error(err);
 
@@ -636,3 +692,4 @@ app.get("/chat/:roomID", ensureLoggedIn('/'), (request, response) => {
     response.render('chat.ejs', {roomID : request.params.roomID});
 
 });
+

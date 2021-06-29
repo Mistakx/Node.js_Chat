@@ -27,6 +27,7 @@
                     });
 
                 });
+
             };
 
             $(document).ready(function () {
@@ -41,7 +42,6 @@
                     location.href = chatURL;
                     return false;
                 });
-
 
 
                 // Room Settings
@@ -68,6 +68,24 @@
                 $('#createRoomForm').submit(function () {
                     socket.emit('createRoom', $('#createRoomFormInput').val());
                     $('#createRoomFormInput').val('');
+                    location.href = '/';
+                    return false;
+                });
+
+                // Delete room submit button clicked
+                $('#deleteRoomForm').submit(function () {
+                    socket.emit('deleteRoom', $('#deleteRoomFormInput').val());
+                    $('#deleteRoomFormInput').val('');
+                    location.href = '/';
+                    return false;
+                });
+
+
+                // Change room name button clicked
+                $('#renameRoomForm').submit(function () {
+                    socket.emit('renameRoom', { roomID: $('#newNameRoomIDFormInput').val(), newRoomName: $('#newRoomNameFormInput').val() });
+                    $('#newNameRoomIDFormInput').val('');
+                    $('#newRoomNameFormInput').val('');
                     location.href = '/';
                     return false;
                 });
@@ -99,6 +117,8 @@
                         socket.emit('changeInvitationSettings', {roomID: $('#changeInvitationSettingsRoomIDFormInput').val(), invitationType: 4});
                         $('#changeInvitationSettingsRoomIDFormInput').val('');
                     }
+
+                    location.href = '/';
 
                 });
 
@@ -156,7 +176,7 @@
 
         <!--Enter Room FormButton-->
         <form id="enterRoomForm" action="">
-            <input style="width:10%" id="enterRoomFormInput" autocomplete="off" />
+            <input style="width:20%" id="enterRoomFormInput" autocomplete="off" />
             <button>Enter Room</button>
         </form>
 
@@ -168,13 +188,13 @@
 
         <!--Join Room FormButton-->
         <form id="joinRoomForm" action="">
-            <input style="width:10%" id="joinRoomFormInput" autocomplete="off" />
+            <input style="width:20%" id="joinRoomFormInput" autocomplete="off" />
             <button>Join Room</button>
         </form>
 
         <!--Leave Room FormButton-->
         <form id="leaveRoomForm" action="">
-            <input style="width:10%" id="leaveRoomIDFormInput" autocomplete="off" />
+            <input style="width:20%" id="leaveRoomIDFormInput" autocomplete="off" />
             <button>Leave Room</button>
         </form>
 
@@ -184,20 +204,36 @@
 
         <!--Create Room FormButton-->
         <form id="createRoomForm" action="">
-            <input style="width:10%" id="createRoomFormInput" autocomplete="off" />
+            <input style="width:20%" id="createRoomFormInput" autocomplete="off" />
             <button>Create Room</button>
         </form>
 
+        <!--Delete Room FormButton-->
+        <form id="deleteRoomForm" action="">
+            <input style="width:20%" id="deleteRoomFormInput" autocomplete="off" />
+            <button>Delete Room</button>
+        </form>
+
+
+        <!--Change room name FormButton-->
+        <form id="renameRoomForm" action="">
+            <input placeholder="Room ID" style="width:20%" id="newNameRoomIDFormInput" autocomplete="off" />
+            <input placeholder="New Room Name" style="width:20%" id="newRoomNameFormInput" autocomplete="off" />
+            <button>Rename room</button>
+        </form>
+
+
+
         <!--Change room privacy settings FormButton-->
         <form id="changeRoomPrivacyForm" action="">
-            <input style="width:10%" id="changePrivacyRoomIDFormInput" autocomplete="off" />
+            <input style="width:20%" id="changePrivacyRoomIDFormInput" autocomplete="off" />
             <button>Change room privacy</button>
         </form>
 
         <!--Change room invitation settings FormButton-->
         <form id="changeRoomInvitationSettingsForm" action="">
             Invitation Settings:
-            <input style="width:10%" id="changeInvitationSettingsRoomIDFormInput" autocomplete="off" />
+            <input style="width:20%" id="changeInvitationSettingsRoomIDFormInput" autocomplete="off" />
             <button type="submit" value="1">Everyone can invite</button>
             <button type="submit" value="3">Only admins can invite</button>
             <button type="submit" value="4">Only creator can invite</button>
@@ -205,8 +241,8 @@
 
         <!--Add user to room FormButton-->
         <form id="addUserToRoomForm" action="">
-            <input placeholder="Room ID" style="width:10%" id="roomIDFormInput" autocomplete="off" />
-            <input placeholder="Username" style="width:10%" id="usernameToAddFormInput" autocomplete="off" />
+            <input placeholder="Room ID" style="width:20%" id="roomIDFormInput" autocomplete="off" />
+            <input placeholder="Username" style="width:20%" id="usernameToAddFormInput" autocomplete="off" />
             <button>Add user to Room</button>
         </form>
 
@@ -222,13 +258,13 @@
 
         <!--Add friend FormButton-->
         <form id="addFriendForm" action="">
-            <input style="width:10%" id="addFriendUsernameFormInput" autocomplete="off" />
+            <input style="width:20%" id="addFriendUsernameFormInput" autocomplete="off" />
             <button>Add Friend</button>
         </form>
 
         <!--Remove friend FormButton-->
         <form id="removeFriendForm" action="">
-            <input style="width:10%" id="removeFriendUsernameFormInput" autocomplete="off" />
+            <input style="width:20%" id="removeFriendUsernameFormInput" autocomplete="off" />
             <button>Remove Friend</button>
         </form>
 

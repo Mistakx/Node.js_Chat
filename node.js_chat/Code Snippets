@@ -19,3 +19,7 @@ socket.id;
 
 // Set room database setting
 Room.findByIdAndUpdate(roomID, { $set: { invitationType: invitationType } }).exec();
+
+// Current Date
+new Date(Date.now()).toLocaleString();
+

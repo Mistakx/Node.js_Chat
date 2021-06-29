@@ -10,19 +10,20 @@ Fully done.
 conversas. Qualquer pessoa pode criar uma conversa. A pessoa que cria uma conversa
 escolhe que outras pessoas convidar a participar inicialmente nessa conversa e configura as
 regras da conversa.
-A person can belong to multiple convos.
+Missing - Configure initial room settings.
 
 
 4. Cada mensagem pertence necessariamente a uma conversa, mas podem existir partilhas de
 links para mensagens específicas. Uma conversa tem um nome descritivo, que por omissão é
 a data em que foi iniciada. O nome da conversa pode ser alterado posteriormente, mas o
 histórico de nomes (e respetiva data é guardado).
-Not done.
+Name done. By omission name is the date done.
+Name can be changed, and the previous name and date is saved.
 
 5. Cada pessoa pode recusar o convite para participar nas conversas. Uma pessoa pode a
 qualquer momento abandonar uma conversa. Tendo já participado na conversa pode mais
 tarde pedir para ser readmitido.
-Not done.
+A person can leave a room.
 
 
 6. As mensagens são acrescentadas ao “flow” de uma conversa com base na data, mas também
@@ -35,18 +36,19 @@ conteúdo em html. O código pode ser pré-compilado num .css, embora mantendo o
 original na entrega final. Estes princípios ou técnicas não são limitados aos lecionados nas
 aulas, havendo, portanto, liberdade de escolha e implementação, desde que adequados e
 devidamente documentados.
-Not done. Probably not gonna do it.
+Not done.
 
 8. Deverá ser desenvolvido e utilizado um módulo/dependência externa para node.js. As funções
 exportadas terão de ser coerentes dentro do módulo, i.e. servir um propósito comum.
-Don't understand this one.
+Not done.
 
 
 9. Todas as mensagens deverão ser guardadas na base de dados fornecida.
 Fully done.
 
 10. Utilizar selectores para class e id tanto em jQuery como em regras CSS.
-Fully done.
+ID selector in both jQuery and CSS.
+Class in CSS.
 
 14. Todas as mensagens deverão ser guardadas na base de dados fornecida.
 Fully done.
@@ -62,3 +64,5 @@ Give more feedback to the user when pressing according to the way the server ans
 Delete user account option.
 
 I was removing friend on the client side.
+
+change room name
