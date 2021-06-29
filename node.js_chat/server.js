@@ -284,7 +284,7 @@ io.on('connection', socket => {
 
     })
 
-    // Client deletes a chat room
+    // Creator deletes a chat room
     socket.on('deleteRoom', function(roomID) {
 
         let clientUsername = socket.request.user.username
@@ -300,7 +300,6 @@ io.on('connection', socket => {
 
                 let roomCreator = roomData.creator;
 
-                // Only creator can delete a chat room
                 if (clientUsername === roomCreator) {
 
                     Room.findByIdAndRemove(roomID).exec();
@@ -314,7 +313,7 @@ io.on('connection', socket => {
 
     })
 
-    // Admin changes rooms name
+    // Creator changes rooms name
     socket.on('renameRoom', function (message) {
 
         let roomID = message.roomID;
@@ -329,9 +328,9 @@ io.on('connection', socket => {
             } else {
 
                 clientUsername = socket.request.user.username;
-                let roomAdmin = roomData.admin;
+                let roomCreator = roomData.creator;
 
-                if (clientUsername === roomAdmin) {
+                if (clientUsername === roomCreator) {
 
                     let currentRoomName = roomData.name;
                     let currentDate = new Date(Date.now()).toLocaleString();
@@ -348,8 +347,7 @@ io.on('connection', socket => {
 
     })
 
-
-    // Admin changes the rooms privacy
+    // Creator changes the rooms privacy
     socket.on('changeRoomPrivacy', function (roomID) {
 
         Room.findById(roomID, (error, roomData) => {
@@ -361,10 +359,10 @@ io.on('connection', socket => {
             } else {
 
                 clientUsername = socket.request.user.username;
-                let roomAdmin = roomData.admin;
+                let roomCreator = roomData.creator;
                 let roomPrivacy = roomData.privateRoom;
 
-                if (clientUsername === roomAdmin) {
+                if (clientUsername === roomCreator) {
 
                     if (roomPrivacy === true) {
 
@@ -384,13 +382,32 @@ io.on('connection', socket => {
 
     })
 
-    // Admin changes the room invitation settings
+    // Creator changes the room invitation settings
     socket.on('changeInvitationSettings', function (clientMessage) {
 
         let roomID = clientMessage.roomID;
         let invitationType = clientMessage.invitationType;
 
-        Room.findByIdAndUpdate(roomID, {$set: {invitationType: invitationType}}).exec();
+        Room.findById(roomID, (error, roomData) => {
+
+            if (error) {
+
+                console.log(error);
+
+            } else {
+
+                clientUsername = socket.request.user.username;
+                let roomCreator = roomData.creator;
+
+                if (clientUsername === roomCreator) {
+
+                    Room.findByIdAndUpdate(roomID, {$set: {invitationType: invitationType}}).exec();
+
+                }
+
+            }
+
+        })
 
     })
 

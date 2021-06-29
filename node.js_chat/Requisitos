@@ -1,58 +1,108 @@
 1. Deverá ser possível a um utilizador criar uma conta com : nome de utilizador, password e foto
 de perfil.
-Username and password done.
+Done - Username and password.
+Missing - Profile pic.
 
 2. O sistema deverá apresentar um ecrã de login, só após o login bem sucedido um utilizador
 poderá iniciar ou aceder às conversas.
-Fully done.
+Done - Fully.
 
 3. Em cada conversa participam várias pessoas, mas cada pessoa pode participar em várias
 conversas. Qualquer pessoa pode criar uma conversa. A pessoa que cria uma conversa
 escolhe que outras pessoas convidar a participar inicialmente nessa conversa e configura as
 regras da conversa.
-Missing - Configure initial room settings.
+Done - A person can belong to multiple rooms. Any person can create a room.
+Missing - Configure initial room settings and users. Can be configured later.
 
 
 4. Cada mensagem pertence necessariamente a uma conversa, mas podem existir partilhas de
 links para mensagens específicas. Uma conversa tem um nome descritivo, que por omissão é
 a data em que foi iniciada. O nome da conversa pode ser alterado posteriormente, mas o
 histórico de nomes (e respetiva data é guardado).
-Name done. By omission name is the date done.
-Name can be changed, and the previous name and date is saved.
+Done - A message belongs to a room. Room name. By omission name is the date. Name can be changed. If name is changed the previous name and date is saved.
+Missing - Link to specific message.
 
 5. Cada pessoa pode recusar o convite para participar nas conversas. Uma pessoa pode a
 qualquer momento abandonar uma conversa. Tendo já participado na conversa pode mais
 tarde pedir para ser readmitido.
-A person can leave a room.
+Done - A person can leave a room. A person can enter a previous room if it is public of if invited again.
+Missing - A person can't refuse an invitation. A person can't ask to join a previous room, but can rejoin if invited or if the room is public.
 
 
 6. As mensagens são acrescentadas ao “flow” de uma conversa com base na data, mas também
 podem existir mensagens em resposta a outra mensagem, também ordenadas por data, o que
 cria uma árvore de mensagens (como no facebook).
-Messages get added according do the time they're sent.
+Done - Messages get added to the room according do the time they're sent.
+Missing - Messages in response to other messages.
+
 
 7. Deverão ser usados pelo menos 2 princípios DRY ou técnicas de sass para a estilização do
 conteúdo em html. O código pode ser pré-compilado num .css, embora mantendo o .scss
 original na entrega final. Estes princípios ou técnicas não são limitados aos lecionados nas
 aulas, havendo, portanto, liberdade de escolha e implementação, desde que adequados e
 devidamente documentados.
-Not done.
+Done - Used EJS.
+Missing - SASS.
 
 8. Deverá ser desenvolvido e utilizado um módulo/dependência externa para node.js. As funções
 exportadas terão de ser coerentes dentro do módulo, i.e. servir um propósito comum.
-Not done.
+Missing - Using MVC.
 
 
 9. Todas as mensagens deverão ser guardadas na base de dados fornecida.
-Fully done.
+Done - Fully.
 
 10. Utilizar selectores para class e id tanto em jQuery como em regras CSS.
-ID selector in both jQuery and CSS.
-Class in CSS.
+Done - ID selector in both jQuery and CSS. Class selector in CSS.
+Missing - Class selector in jQuery.
 
 14. Todas as mensagens deverão ser guardadas na base de dados fornecida.
-Fully done.
+Done - Fully.
 
+
+15. As regras configuráveis da conversa incluem:
+a. As conversas podem ser:
+i. Públicas (todos os conteúdos são visíveis). As conversas públicas podem ser
+apresentadas como um blog.
+ii. Reservadas (o nome da conversa é público, mas os conteúdos só são visíveis
+para participantes da conversa)
+iii. Privadas (nem o nome da conversa é público)
+Done - Conversations can be private and public.
+       Private - Needs invitation to join.
+       Public - Anyone can join if they have the room ID.
+Missing - ii, not joined rooms aren't shown to the user.
+
+
+
+b. O convite a novas pessoas participantes pode ser:
+i. Todos os participantes podem convidar outros participantes a qualquer
+momento.
+ii. Os convites a novos participantes têm de ser pré-aprovados (ver votações).
+iii. Apenas os administradores podem fazer convites (o criador é inicialmente o
+único administrador).
+iv. Apenas o criador da conversa pode fazer convites
+Done - i, iii, iv
+Missing - ii
+To be debugged.
+
+h. Sobre o encerramento da conversa:
+i. Qualquer convidado pode solicitar uma votação para encerramento de
+conversa.
+ii. Apenas administradores podem solicitar uma votação (entre eles) para
+encerramento de conversa. As conversas serão arquivadas, não sendo
+possível acrescentar mensagens, mas podem acessíveis aos administradores
+ou também aos participantes.
+iii. Apenas o criador pode encerrar conversas.
+Done - iii
+Missing - i, ii
+
+i. Sobre a alteração de configurações da conversa:
+i. Qualquer convidado pode alterar configurações da conversa.
+ii. Apenas administradores podem solicitar uma votação (entre eles) para
+alterar configurações da conversa.
+iii. Apenas o criador pode alterar configurações da conversa.
+Done - iii
+Missing - i, ii
 
 
 Things I would like to do if I wasn't doing this all by myself and had the time:
