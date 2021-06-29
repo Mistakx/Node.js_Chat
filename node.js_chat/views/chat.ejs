@@ -7,6 +7,19 @@
 
     <style>
 
+        li {
+
+        }
+
+        li:hover {
+            background-color: lightgray;
+        }
+
+        li:hover ul {
+            background-color: white;
+            font-weight: normal;
+        }
+
         body {
             font: 13px Helvetica, Arial;
         }
@@ -38,6 +51,8 @@
 
     <script>
 
+        let socket = io();
+
         function intToRGB(integer) {
             let c = (integer & 0x00FFFFFF)
                 .toString(16)
@@ -63,11 +78,13 @@
             });
         }
 
+        function linkMessage(messageID) {
+
+            socket.emit('linkMessage', {messageID: messageID, roomID: "<%- roomID %>" })
+
+        }
+
         $(document).ready(function () {
-
-            let socket = io();
-
-            socket.emit("enteredRoom", "<%- roomID %>");
 
             // Message submit button clocked
             $('#messageForm').submit(function () {
@@ -76,10 +93,21 @@
                 return false;
             });
 
+            // Client receives linked message
+            socket.on('linkMessage', function(message) {
+                console.log("DEBUG");
+                console.log(message)
+                $('#chatMessageBox').append('<li ' + 'style=background-color:#' + hashCode(message.clientUsername) + '>' + '<a href=\"#' + message.messageID + '\" > ' + message.clientUsername + ": Linked a message" + '</li>');
+                window.scrollTo(0,document.body.scrollHeight);
+            });
+
+
+            // Client enters room
+            socket.emit("enteredRoom", "<%- roomID %>");
+
             // Client received message
             socket.on('chatMessage', function(message) {
-                console.log("RECEIVED MESSAGE DEBUG");
-                $('#chatMessageBox').append('<li style=background-color:#' + hashCode(message.id) + '>' + (message.id + ":" + linkify(message.msg)) + '</li>');
+                $('#chatMessageBox').append('<li ' + 'id=' + message.messageID + ' onClick="linkMessage(this.id)" ' +  'style=background-color:#' + hashCode(message.clientUsername) + '>' + (message.clientUsername + ":" + linkify(message.message)) + '</li>');
                 window.scrollTo(0,document.body.scrollHeight);
             });
 
@@ -88,6 +116,7 @@
                 $('#chatMessageBox').append('<li style="background-color:#000000;color:#FFFFFF">' + (message) + '</li>');
                 window.scrollTo(0,document.body.scrollHeight);
             });
+
         });
 
     </script>

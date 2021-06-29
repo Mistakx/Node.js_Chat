@@ -114,23 +114,44 @@ io.on('connection', socket => {
         // Not too important for now.
         //<script>alert(" Please don't send me in the chat :( ");</script>
 
-
         // clientMessage = {room: roomID, message: message}
-        console.log('New message: ' + JSON.stringify(clientMessage));
+        //console.log('New message: ' + JSON.stringify(clientMessage));
 
-        let message = {msg:clientMessage.message, id:socket.request.user.username};
+        let clientUsername = socket.request.user.username;
 
         //socket.broadcast.to(user.room).emit('message',formatMessage(botName, `${user.username} has joined the chat`));
         // console.log(socket.rooms); // prints all elements of the rooms object
         // console.log(clientMessage.room)
-        io.to(clientMessage.room).emit('chatMessage', message);
         //io.emit('chatMessage', message);
 
-        const instance = new Message({ message: message.msg });
+
+
+        const instance = new Message({ message: clientMessage.message });
+
         instance.save(function (err, instance) {
+
             if (err) return console.error(err);
+
+            //console.log(instance);
+            let messageID = instance._id;
+            let message = { messageID: messageID, message: clientMessage.message, clientUsername: clientUsername};
+
+            io.to(clientMessage.room).emit('chatMessage', message);
+
         });
     })
+
+    // Client links message
+    socket.on('linkMessage', function(clientMessage) {
+
+        let clientUsername = socket.request.user.username;
+        let roomID = clientMessage.roomID;
+        let messageID = clientMessage.messageID;
+
+        io.to(roomID).emit('linkMessage', {clientUsername: clientUsername, messageID: messageID});
+
+    })
+
 
     // Client enters a chat room
     socket.on('enteredRoom', function(roomID) {
