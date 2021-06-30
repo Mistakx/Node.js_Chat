@@ -23,3 +23,5 @@ Room.findByIdAndUpdate(roomID, { $set: { invitationType: invitationType } }).exe
 // Current Date
 new Date(Date.now()).toLocaleString();
 
+// Inner HTML
+document.getElementById(message.messageID).innerHTML

@@ -84,6 +84,12 @@
 
         }
 
+        function referenceMessage(messageID) {
+
+            socket.emit('referenceMessage', {roomID: "<%- roomID %>", message: $('#messageFormInput').val(), messageID: messageID});
+
+        }
+
         $(document).ready(function () {
 
             // Message submit button clocked
@@ -93,21 +99,42 @@
                 return false;
             });
 
-            // Client receives linked message
-            socket.on('linkMessage', function(message) {
-                console.log("DEBUG");
-                console.log(message)
-                $('#chatMessageBox').append('<li ' + 'style=background-color:#' + hashCode(message.clientUsername) + '>' + '<a href=\"#' + message.messageID + '\" > ' + message.clientUsername + ": Linked a message" + '</li>');
-                window.scrollTo(0,document.body.scrollHeight);
-            });
-
 
             // Client enters room
             socket.emit("enteredRoom", "<%- roomID %>");
 
+            // Client receives linked message
+            socket.on('linkMessage', function(message) {
+                $('#chatMessageBox').append('<li ' + 'style=background-color:#' + hashCode(message.clientUsername) + '>' + '<a href=\"#' + message.messageID + '\" > ' + message.clientUsername + ": Linked a message" + '</li>');
+                window.scrollTo(0,document.body.scrollHeight);
+            });
+
+            // Client receives reference message
+            socket.on('referenceMessage', function(message) {
+
+                console.log(document.getElementById(message.messageID).innerHTML)
+                $('#chatMessageBox').append('<li ' + 'style=background-color:#' + hashCode(message.clientUsername) + '>' + '<a href=\"#' + message.messageID + '\" > ' + document.getElementById(message.messageID).innerHTML + '</a> <br>' + (message.clientUsername + ":" + linkify(message.message)) + '</li>');
+                window.scrollTo(0,document.body.scrollHeight);
+            });
+
+
+
+
             // Client received message
             socket.on('chatMessage', function(message) {
-                $('#chatMessageBox').append('<li ' + 'id=' + message.messageID + ' onClick="linkMessage(this.id)" ' +  'style=background-color:#' + hashCode(message.clientUsername) + '>' + (message.clientUsername + ":" + linkify(message.message)) + '</li>');
+
+                // onClick="linkMessage(this.id)"
+
+                let messageID = message.messageID;
+
+
+                // let replyButton = '<button onclick=\"referenceMessage('  + ')"' + 'type="button">Reference</button>';
+                let replyButton = '<button onclick="referenceMessage(' + "'" + messageID + "'" + ')"' + 'type="button">Reference</button>';
+
+
+                //let replyButton = '<button ' + 'type="button">Reference</button>';
+                $('#chatMessageBox').append('<li ' + 'id=' + messageID + ' onClick="linkMessage(this.id)" ' + 'style=background-color:#' + hashCode(message.clientUsername) + '>' + (message.clientUsername + ":" + linkify(message.message)) + '</li>');
+                $('#chatMessageBox').append(replyButton);
                 window.scrollTo(0,document.body.scrollHeight);
             });
 
@@ -146,6 +173,18 @@
 
 </div>
 
+<!--<script>-->
+
+<!--    var inputElement = document.createElement('input');-->
+<!--    inputElement.type = "button";-->
+
+<!--    inputElement.addEventListener('click', function(){-->
+<!--        linkify(result.name);-->
+<!--    });-->
+
+<!--document.body.appendChild(inputElement);-->
+
+<!--</script>-->
 
 </body>
 

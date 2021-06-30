@@ -19,8 +19,7 @@ Missing - Configure initial room settings and users. Can be configured later.
 links para mensagens específicas. Uma conversa tem um nome descritivo, que por omissão é
 a data em que foi iniciada. O nome da conversa pode ser alterado posteriormente, mas o
 histórico de nomes (e respetiva data é guardado).
-Done - A message belongs to a room. Room name. By omission name is the date. Name can be changed. If name is changed the previous name and date is saved.
-Missing - Link to specific message.
+Done - Fully
 
 5. Cada pessoa pode recusar o convite para participar nas conversas. Uma pessoa pode a
 qualquer momento abandonar uma conversa. Tendo já participado na conversa pode mais
@@ -58,6 +57,22 @@ Missing - Class selector in jQuery.
 
 14. Todas as mensagens deverão ser guardadas na base de dados fornecida.
 Done - Fully.
+
+11. Complementarmente, um participante pode adicionar uma referência a uma mensagem
+anterior, mas acrescentá-la ao “flow” principal (não criando uma hierarquia - árvore), como no
+WhatsApp.
+Missing - Everything
+
+12. No âmbito de uma conversa, podem ser enviadas mensagens dirigidas entre participantes (TO
+e CC, mas não BCC). Estas mensagens são totalmente privadas e não podem ser vistas pelos
+administradores.
+Missing - Everything
+
+13. As mensagens podem ser de texto, conter um ou mais ficheiros, de vários tipos (imagens, zip,
+powerpoints), áudio, vídeo ou mesmo links para conteúdos externos, ou links para mensagens
+da mesma conversa ou mensagens de outras conversas.
+Done - Messages can be text, links to messages in the same room, or links to exterior websites and content.
+Missing - Messages can't be any file type.
 
 
 15. As regras configuráveis da conversa incluem:

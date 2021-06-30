@@ -152,6 +152,20 @@ io.on('connection', socket => {
 
     })
 
+    // Client references message
+    socket.on('referenceMessage', function(clientMessage) {
+
+        console.log("DEBUG1")
+        let clientUsername = socket.request.user.username;
+        let roomID = clientMessage.roomID;
+        let messageID = clientMessage.messageID;
+
+        console.log(clientMessage)
+
+        io.to(roomID).emit('referenceMessage', {clientUsername: clientUsername, messageID: messageID, roomID: roomID, message: clientMessage.message});
+
+    })
+
 
     // Client enters a chat room
     socket.on('enteredRoom', function(roomID) {
@@ -266,8 +280,6 @@ io.on('connection', socket => {
                 // console.log("Room to delete user from: " + roomID);
 
                 Room.findByIdAndUpdate(roomID, { $pull: { users: clientUsername } }).exec();
-
-
 
             }
 
@@ -441,6 +453,8 @@ io.on('connection', socket => {
         let roomID = clientMessage.room;
         let usernameToAdd = clientMessage.usernameToAdd;
 
+
+
         Room.findById(roomID, (error, roomData) => {
 
             if (error) {
@@ -481,7 +495,6 @@ io.on('connection', socket => {
                     }
 
                 }
-
 
             }
 
