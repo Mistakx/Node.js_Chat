@@ -25,3 +25,7 @@ new Date(Date.now()).toLocaleString();
 
 // Inner HTML
 document.getElementById(message.messageID).innerHTML
+
+// Left Margin
+margin-left:100px
+var left = $("#test").offset().left;

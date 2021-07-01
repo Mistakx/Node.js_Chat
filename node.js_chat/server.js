@@ -155,14 +155,60 @@ io.on('connection', socket => {
     // Client references message
     socket.on('referenceMessage', function(clientMessage) {
 
-        console.log("DEBUG1")
         let clientUsername = socket.request.user.username;
         let roomID = clientMessage.roomID;
-        let messageID = clientMessage.messageID;
+        let messageToReferenceID = clientMessage.messageID;
 
-        console.log(clientMessage)
+        // console.log(clientMessage)
 
-        io.to(roomID).emit('referenceMessage', {clientUsername: clientUsername, messageID: messageID, roomID: roomID, message: clientMessage.message});
+
+        const instance = new Message({message: clientMessage.message});
+
+        instance.save(function (err, instance) {
+
+            let messageID = instance._id;
+
+            io.to(roomID).emit('referenceMessage', {
+                clientUsername: clientUsername,
+                messageToReferenceID: messageToReferenceID,
+                messageID: messageID,
+                roomID: roomID,
+                message: clientMessage.message
+            });
+
+
+        })
+
+    })
+
+    // Client reply message
+    socket.on('replyMessage', function(clientMessage) {
+
+        let clientUsername = socket.request.user.username;
+        let roomID = clientMessage.roomID;
+        let messageToReplyToID = clientMessage.messageID;
+
+        //console.log(clientMessage);
+
+
+
+        const instance = new Message({ message: clientMessage.message });
+
+        instance.save(function (err, instance) {
+
+            if (err) return console.error(err);
+
+            let messageID = instance._id;
+
+            io.to(roomID).emit('replyMessage', {
+                clientUsername: clientUsername,
+                messageToReplyToID: messageToReplyToID,
+                messageID: messageID,
+                roomID: roomID,
+                message: clientMessage.message
+            });
+
+        });
 
     })
 
@@ -197,7 +243,6 @@ io.on('connection', socket => {
                         if (roomUsers[i] === clientUsername) {
                             userIsInRoom = true;
                             break;
-
                         }
 
                     }

@@ -31,8 +31,7 @@ Missing - A person can't refuse an invitation. A person can't ask to join a prev
 6. As mensagens são acrescentadas ao “flow” de uma conversa com base na data, mas também
 podem existir mensagens em resposta a outra mensagem, também ordenadas por data, o que
 cria uma árvore de mensagens (como no facebook).
-Done - Messages get added to the room according do the time they're sent.
-Missing - Messages in response to other messages.
+Done - Fully.
 
 
 7. Deverão ser usados pelo menos 2 princípios DRY ou técnicas de sass para a estilização do
@@ -55,13 +54,10 @@ Done - Fully.
 Done - ID selector in both jQuery and CSS. Class selector in CSS.
 Missing - Class selector in jQuery.
 
-14. Todas as mensagens deverão ser guardadas na base de dados fornecida.
-Done - Fully.
-
 11. Complementarmente, um participante pode adicionar uma referência a uma mensagem
 anterior, mas acrescentá-la ao “flow” principal (não criando uma hierarquia - árvore), como no
 WhatsApp.
-Missing - Everything
+Done - Fully.
 
 12. No âmbito de uma conversa, podem ser enviadas mensagens dirigidas entre participantes (TO
 e CC, mas não BCC). Estas mensagens são totalmente privadas e não podem ser vistas pelos
@@ -74,6 +70,8 @@ da mesma conversa ou mensagens de outras conversas.
 Done - Messages can be text, links to messages in the same room, or links to exterior websites and content.
 Missing - Messages can't be any file type.
 
+14. Todas as mensagens deverão ser guardadas na base de dados fornecida.
+Done - Fully.
 
 15. As regras configuráveis da conversa incluem:
 a. As conversas podem ser:
@@ -127,7 +125,3 @@ Check if a friend is online.
 Actually correctly implement the MVC design pattern.
 Give more feedback to the user when pressing according to the way the server answers.
 Delete user account option.
-
-I was removing friend on the client side.
-
-change room name

@@ -48,6 +48,7 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
 
     <script>
 
@@ -87,10 +88,26 @@
         function referenceMessage(messageID) {
 
             socket.emit('referenceMessage', {roomID: "<%- roomID %>", message: $('#messageFormInput').val(), messageID: messageID});
+            $('#messageFormInput').val('');
+
+        }
+
+        function replyMessage(messageID) {
+
+            socket.emit('replyMessage', {roomID: "<%- roomID %>", message: $('#messageFormInput').val(), messageID: messageID});
+            $('#messageFormInput').val('');
 
         }
 
         $(document).ready(function () {
+
+            $("button").click(function() {
+                // $(this).effect( "shake", {times: 1, distance: 2} );
+                $(this).effect( "bounce", "slow" );
+
+                // $( "div" ).effect( "bounce", "slow" );
+
+            });
 
             // Message submit button clocked
             $('#messageForm').submit(function () {
@@ -112,13 +129,57 @@
             // Client receives reference message
             socket.on('referenceMessage', function(message) {
 
-                console.log(document.getElementById(message.messageID).innerHTML)
-                $('#chatMessageBox').append('<li ' + 'style=background-color:#' + hashCode(message.clientUsername) + '>' + '<a href=\"#' + message.messageID + '\" > ' + document.getElementById(message.messageID).innerHTML + '</a> <br>' + (message.clientUsername + ":" + linkify(message.message)) + '</li>');
+                console.log(message);
+
+
+                let messageToReferenceID = message.messageToReferenceID;
+                let messageID = message.messageID;
+
+                let messageToReference =  document.getElementById(messageToReferenceID).innerHTML;
+                if (messageToReference.includes('<br>')) {
+                    messageToReference = document.getElementById(messageToReferenceID).innerHTML.split('<br>')[1];
+                }
+
+                //console.log(document.getElementById(message.messageID).innerHTML)
+                $('#chatMessageBox').append('<li ' + 'id=' + messageID + ' onClick="linkMessage(this.id)" ' + ' style=background-color:#' + hashCode(message.clientUsername) + '>' + '<a href=\"#' + messageToReferenceID + '\" > ' + messageToReference + '</a> <br>' + (message.clientUsername + ":" + linkify(message.message)) + '</li>');
+                //$('#chatMessageBox').append('<li ' + 'id=' + messageID + ' style=\"background-color:#' + hashCode(message.clientUsername) + ';' + ' margin-left:' + messageMargin + 'px\"' + '>' + '<a href=\"#' + messageToReplyToID + '\" > ' + messageToQuote + '</a> <br>' + (message.clientUsername + ":" + linkify(message.message)) + '</li>');
+
+
+                let referenceButton = '<button onclick="referenceMessage(' + "'" + messageID + "'" + ')"' + 'type="button">Reference</button>';
+                let replyButton = '<button onclick="replyMessage(' + "'" + messageID + "'" + ')"' + 'type="button">Reply</button>';
+                $('#chatMessageBox').append(referenceButton);
+                $('#chatMessageBox').append(replyButton);
+
                 window.scrollTo(0,document.body.scrollHeight);
             });
 
+            // Client receives reply message
+            socket.on('replyMessage', function(message) {
 
+                console.log(message);
 
+                let messageToReplyToID = message.messageToReplyToID;
+                let messageID = message.messageID;
+
+                let hashTagMessageToReplyToID = '#' + messageToReplyToID;
+                let messageMargin = $(hashTagMessageToReplyToID).offset().left + 40;
+
+                // console.log(document.getElementById(message.messageID).innerHTML)
+                let messageToQuote =  document.getElementById(messageToReplyToID).innerHTML;
+                if (messageToQuote.includes('<br>')) {
+                    messageToQuote = document.getElementById(messageToReplyToID).innerHTML.split('<br>')[1];
+                }
+
+                $('#chatMessageBox').append('<li ' + 'id=' + messageID + ' onClick="linkMessage(this.id)" ' +  ' style=\"background-color:#' + hashCode(message.clientUsername) + ';' + ' margin-left:' + messageMargin + 'px\"' + '>' + '<a href=\"#' + messageToReplyToID + '\" > ' + messageToQuote + '</a> <br>' + (message.clientUsername + ":" + linkify(message.message)) + '</li>');
+
+                let referenceButton = '<button onclick="referenceMessage(' + "'" + messageID + "'" + ')"' + 'type="button">Reference</button>';
+                let replyButton = '<button onclick="replyMessage(' + "'" + messageID + "'" + ')"' + 'type="button">Reply</button>';
+                $('#chatMessageBox').append(referenceButton);
+                $('#chatMessageBox').append(replyButton);
+
+                window.scrollTo(0,document.body.scrollHeight);
+
+            });
 
             // Client received message
             socket.on('chatMessage', function(message) {
@@ -127,13 +188,13 @@
 
                 let messageID = message.messageID;
 
-
                 // let replyButton = '<button onclick=\"referenceMessage('  + ')"' + 'type="button">Reference</button>';
-                let replyButton = '<button onclick="referenceMessage(' + "'" + messageID + "'" + ')"' + 'type="button">Reference</button>';
-
+                let referenceButton = '<button onclick="referenceMessage(' + "'" + messageID + "'" + ')"' + 'type="button">Reference</button>';
+                let replyButton = '<button onclick="replyMessage(' + "'" + messageID + "'" + ')"' + 'type="button">Reply</button>';
 
                 //let replyButton = '<button ' + 'type="button">Reference</button>';
                 $('#chatMessageBox').append('<li ' + 'id=' + messageID + ' onClick="linkMessage(this.id)" ' + 'style=background-color:#' + hashCode(message.clientUsername) + '>' + (message.clientUsername + ":" + linkify(message.message)) + '</li>');
+                $('#chatMessageBox').append(referenceButton);
                 $('#chatMessageBox').append(replyButton);
                 window.scrollTo(0,document.body.scrollHeight);
             });
